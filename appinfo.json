@@ -1,9 +1,9 @@
 {
 	"id": "org.eamonn.nrby",
 	"version": "0.2.0",
-	"vendor": "My Company",
+	"vendor": "Eamonn O'Brien-Strain",
 	"type": "web",
 	"main": "index.html",
-	"title": "Nrby Photos",
+	"title": "NrbyPhotos",
 	"icon": "icon.png"
 }
