@@ -30,8 +30,10 @@ FirstAssistant.prototype.setup = function () {
 		onSuccess: function (response) {
 		    var url, req;
 			ctl.get("latlon").update(response.latitude + "," + response.longitude);
-			url = 'http://api.flickr.com/services/rest/?method=flickr.places.findByLatLon&api_key=' + Mojo.Controller.appInfo.flickrApiKey + '&lat=' + response.latitude + '&lon=' + response.longitude + '&format=json&nojsoncallback=1';
-//url = 'http://api.flickr.com/services/rest/?method=flickr.places.findByLatLon&api_key=bfc079074ce06c81a8fcab2f4d320a43&lat=' + response.latitude + '&lon=' + response.longitude + '&format=json&nojsoncallback=1';
+			url = 'http://api.flickr.com/services/rest/?method=flickr.places.findByLatLon&api_key=' +
+			  Mojo.Controller.appInfo.flickrApiKey +
+			  '&lat=' + response.latitude +
+			  '&lon=' + response.longitude + '&format=json&nojsoncallback=1';
 			ctl.get("place").update("Getting response from Flickr ...");
 			req = new Ajax.Request(url, {
 			    method: 'get',
