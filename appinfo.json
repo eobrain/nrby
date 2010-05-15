@@ -5,5 +5,6 @@
 	"type": "web",
 	"main": "index.html",
 	"title": "NrbyPhotos",
-	"icon": "icon.png"
+	"icon": "icon.png",
+	"flickrApiKey": "REPLACE-THIS-WITH-A-FLICKR-API-KEY"
 }

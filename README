@@ -1,5 +1,15 @@
-This is a Palm WebOS program that displays photographs that other
-people have taken close to your current location.
+This is a Palm WebOS app that displays photographs that other people
+have taken close to your current location.
+
+Before building the app you will need to get a Flickr API key from
+http://www.flickr.com/services/apps/create/apply/? and add it to the
+appinfo.json file.
+
+There are several ways to build this app, including the Eclipse IDE or
+the ARES online IDE.  Alternatively if you are on a Mac or a Windows
+PC woith Cygwin you can use the Makefile provided.  Just type "make"
+to run JSLint on the code and then package and install on the Palm
+Emulator or actual device.
 
 Copyright (c) 2010 Eamonn O'Brien-Strain, eob@well.com All rights
 reserved. This program and the accompanying materials are made

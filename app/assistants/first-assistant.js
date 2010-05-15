@@ -7,6 +7,9 @@
  * which is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
+/* declare globals to keep JSLint happy */
+var Ajax, Mojo;
+
 function FirstAssistant() {
 	/* this is the creator function for your scene assistant object. It will be passed all the 
 	   additional parameters (after the scene name) that were passed to pushScene. The reference
@@ -25,7 +28,26 @@ FirstAssistant.prototype.setup = function () {
 	    method : 'getCurrentPosition',
 		parameters: { responseTime: 2, subscribe: false },
 		onSuccess: function (response) {
+		    var url, req;
 			ctl.get("latlon").update(response.latitude + "," + response.longitude);
+			url = 'http://api.flickr.com/services/rest/?method=flickr.places.findByLatLon&api_key=' + Mojo.Controller.appInfo.flickrApiKey + '&lat=' + response.latitude + '&lon=' + response.longitude + '&format=json&nojsoncallback=1';
+//url = 'http://api.flickr.com/services/rest/?method=flickr.places.findByLatLon&api_key=bfc079074ce06c81a8fcab2f4d320a43&lat=' + response.latitude + '&lon=' + response.longitude + '&format=json&nojsoncallback=1';
+			ctl.get("place").update("Getting response from Flickr ...");
+			req = new Ajax.Request(url, {
+			    method: 'get',
+				onSuccess: function (transport) {
+				    var response = Mojo.parseJSON(transport.responseText);
+					if (response.stat !== "ok") {
+					    ctl.get("place").update("Error from Flickr " + transport.responseText);
+					} else {
+					    ctl.get("place").update(response.places.place[0].name);
+					}
+				},
+				onFailure: function () {
+				    ctl.get("place").update('Problem connecting to Flickr');
+				}
+			});
+
 		},
 	    onFailure: function (response) {
 		    ctl.get("latlon").update("Error getting GPS info: " + response);
