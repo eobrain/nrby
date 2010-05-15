@@ -17,46 +17,49 @@ function FirstAssistant() {
 	   that needs the scene controller should be done in the setup function below. */
 }
 
+/* this function is for setup tasks that have to happen when the scene is first created */
 FirstAssistant.prototype.setup = function () {
-	/* this function is for setup tasks that have to happen when the scene is first created */
+    var ctl, callFlickr;
+
+    ctl = this.controller;
+
+    callFlickr = function (method, args, callback) {
+	    var url, req;
+	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
+		'&api_key=' + Mojo.Controller.appInfo.flickrApiKey +
+		'&' + args + '&format=json&nojsoncallback=1';
+		req = new Ajax.Request(url, {
+	        method: 'get',
+		    onSuccess: callback,
+		    onFailure: function () {
+		        ctl.get("place").update('Problem calling flickr.' + method);
+			}
+		});
+	};
 		
-	/* use Mojo.View.render to render view templates and add them to the scene, if needed */
-	
-	/* setup widgets here */
-    var ctl = this.controller;
     ctl.serviceRequest('palm://com.palm.location', {
 	    method : 'getCurrentPosition',
 		parameters: { responseTime: 2, subscribe: false },
 		onSuccess: function (response) {
-		    var url, req;
 			ctl.get("latlon").update(response.latitude + "," + response.longitude);
-			url = 'http://api.flickr.com/services/rest/?method=flickr.places.findByLatLon&api_key=' +
-			  Mojo.Controller.appInfo.flickrApiKey +
-			  '&lat=' + response.latitude +
-			  '&lon=' + response.longitude + '&format=json&nojsoncallback=1';
 			ctl.get("place").update("Getting response from Flickr ...");
-			req = new Ajax.Request(url, {
-			    method: 'get',
-				onSuccess: function (transport) {
+			callFlickr(
+			    'places.findByLatLon',
+				'lat=' + response.latitude + '&lon=' + response.longitude,
+				function (transport) {
 				    var response = Mojo.parseJSON(transport.responseText);
 					if (response.stat !== "ok") {
 					    ctl.get("place").update("Error from Flickr " + transport.responseText);
 					} else {
 					    ctl.get("place").update(response.places.place[0].name);
 					}
-				},
-				onFailure: function () {
-				    ctl.get("place").update('Problem connecting to Flickr');
-				}
-			});
-
+				});
 		},
 	    onFailure: function (response) {
 		    ctl.get("latlon").update("Error getting GPS info: " + response);
 		}
 	});
 
-	/* add event handlers to listen to events from widgets */
 };
 
 FirstAssistant.prototype.activate = function (event) {
