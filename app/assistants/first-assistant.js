@@ -7,6 +7,8 @@
  * which is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
+/*jslint devel: true */
+
 /* declare globals to keep JSLint happy */
 var Ajax, Mojo;
 
@@ -47,11 +49,48 @@ FirstAssistant.prototype.setup = function () {
 			    'places.findByLatLon',
 				'lat=' + response.latitude + '&lon=' + response.longitude,
 				function (transport) {
-				    var response = Mojo.parseJSON(transport.responseText);
+				    var response, places, n, i, placeMsg, flickrSearchHandler;
+				    response = Mojo.parseJSON(transport.responseText);
 					if (response.stat !== "ok") {
 					    ctl.get("place").update("Error from Flickr " + transport.responseText);
 					} else {
-					    ctl.get("place").update(response.places.place[0].name);
+					    places = response.places.place;
+						n = places.length;
+						placeMsg = '';
+						for (i = 0; i < n; i += 1) {
+						    placeMsg += places[i].name;
+                        }
+					    ctl.get("place").update(placeMsg);
+
+						flickrSearchHandler = function (transport) {
+						    var response, photos, photo, url, imgElement;
+						    console.log("PHOTO SEARCH returns " + transport.responseText);
+							response = Mojo.parseJSON(transport.responseText);
+							if (response.stat !== "ok") {
+							    ctl.get("place").update("Error from Flickr " + transport.responseText);
+							} else {
+							    photos = response.photos.photo;
+								if (photos.length > 0) {
+								    photo = photos[0];
+									url = 'http://farm' + photo.farm +
+									  '.static.flickr.com/' + photo.server + 
+									  '/' +  photo.id +
+									  '_' +  photo.secret + '_d.jpg';
+									console.log("PHOTO URL " + url);
+									imgElement = ctl.get("photo");
+									console.log("imgElement " + imgElement);
+									imgElement.src = url;
+								}
+							}
+						};
+						for (i = 0; i < n; i += 1) {
+							callFlickr(
+						        'photos.search',
+							    'sort=interestingness-desc&place_id=' + places[i].place_id,
+								flickrSearchHandler
+							);
+                        }
+
 					}
 				});
 		},
