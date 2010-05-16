@@ -38,29 +38,36 @@ FirstAssistant.prototype.setup = function () {
 			}
 		});
 	};
+
+	ctl.placeName = "";
 		
     ctl.serviceRequest('palm://com.palm.location', {
-	    method : 'getCurrentPosition',
-		parameters: { responseTime: 2, subscribe: false },
+	    method : 'startTracking',
+		parameters: { subscribe: true },
 		onSuccess: function (response) {
 		    console.log("Lat/Lon = " + response.latitude + "," + response.longitude);
-			ctl.get("nrby-place").update("Getting response from Flickr ...");
 			callFlickr(
 			    'places.findByLatLon',
 				'lat=' + response.latitude + '&lon=' + response.longitude,
 				function (transport) {
-				    var response, places, n, i, placeMsg, flickrSearchHandler;
+				    var response, places, place, n, i, placeMsg, flickrSearchHandler;
 				    response = Mojo.parseJSON(transport.responseText);
 					if (response.stat !== "ok") {
 					    ctl.get("nrby-place").update("Error from Flickr " + transport.responseText);
 					} else {
 					    places = response.places.place;
-						n = places.length;
-						placeMsg = '';
-						for (i = 0; i < n; i += 1) {
-						    placeMsg += places[i].name;
-                        }
-					    ctl.get("nrby-place").update(placeMsg);
+						if (places.length === 0) {
+						    console.log("FLickr could not find a place");
+						    return;
+						}
+						place = places[0]; 
+
+						if (place.name === ctl.placeName) {
+						    return;
+						}
+						ctl.placeName = place.name;
+
+					    ctl.get("nrby-place").update(place.name);
 
 						flickrSearchHandler = function (transport) {
 						    var response, photos, photo, url, imgElement;
@@ -85,16 +92,15 @@ FirstAssistant.prototype.setup = function () {
 								}
 							}
 						};
-						for (i = 0; i < n; i += 1) {
-							callFlickr(
-						        'photos.search',
-							    'sort=interestingness-desc&place_id=' + places[i].place_id,
-								flickrSearchHandler
+						callFlickr(
+						    'photos.search',
+							'sort=interestingness-desc&place_id=' + place.place_id,
+							flickrSearchHandler
 							);
-                        }
-
 					}
-				});
+
+				}
+			);
 		},
 	    onFailure: function (response) {
 		    ctl.get("nrby-place").update("Error getting GPS info: " + response);

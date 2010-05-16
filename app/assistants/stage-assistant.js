@@ -17,8 +17,8 @@ StageAssistant.prototype.setup = function () {
     this.controller.pushScene("first");
 
 	/* allow rotation */
-	if (this.controller.stageController.setWindowOrientation) {
-	    this.controller.stageController.setWindowOrientation("free");
+	if (this.controller.setWindowOrientation) {
+	    this.controller.setWindowOrientation("free");
 	}
 
 };

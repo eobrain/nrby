@@ -7,11 +7,11 @@
 
 #On a Palm emulator, simulate the GPS changing along a particular route
 
-echo "Press <enter> when prompted for password (five times)"
+Echo "Press <enter> when prompted for password (four times)"
 
 ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/start {}
 ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/speedup {}
 ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/speedup {}
 ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/speedup {}
-ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/speedup {}
+#ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/speedup {}
 
