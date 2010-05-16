@@ -21,7 +21,7 @@ function FirstAssistant() {
 
 /* this function is for setup tasks that have to happen when the scene is first created */
 FirstAssistant.prototype.setup = function () {
-    var ctl, callFlickr, showPhoto, placeName, photos, photoIndex, lastPhotoShowTime;
+    var ctl, callFlickr, showPhoto, placeName, photos, photoIndex, prevTime;
 
     ctl = this.controller;
 
@@ -42,7 +42,7 @@ FirstAssistant.prototype.setup = function () {
 	placeName = "";
 	photos = [];
 	photoIndex = -1;
-	lastPhotoShowTime = 0;
+	prevTime = 0;
 
 	function now() {
 	    var d = new Date();
@@ -52,18 +52,17 @@ FirstAssistant.prototype.setup = function () {
 		
 	showPhoto = function () {
 	    var photo, url;
-		if (photoIndex >= 0 && photos.length > 0 && (now() - lastPhotoShowTime) > 10000) {
+		if (photoIndex >= 0 && photos.length > 0) {
 			photo = photos[photoIndex];
 			photoIndex = (photoIndex + 1) % photos.length;
 			console.log("title=" + photo.title);
-			ctl.get("nrby-title").update(photo.title);
 			url = 'http://farm' + photo.farm +
 			  '.static.flickr.com/' + photo.server + 
 			  '/' +  photo.id +
 			  '_' +  photo.secret + '_d.jpg';
 			console.log("PHOTO URL " + url);
 			ctl.get("nrby-photo").src = url;
-			lastPhotoShowTime = now();
+			ctl.get("nrby-title").update(photo.title);
 		}
 	};
 
@@ -71,6 +70,13 @@ FirstAssistant.prototype.setup = function () {
 	    method : 'startTracking',
 		parameters: { subscribe: true },
 		onSuccess: function (response) {
+
+		    /* throttle the calls to Flickr */
+		    if ((now() - prevTime) < 10000) {
+			    return;  /* too soon */
+			}
+			prevTime = now();
+
 		    console.log("Lat/Lon = " + response.latitude + "," + response.longitude);
 			callFlickr(
 			    'places.findByLatLon',
