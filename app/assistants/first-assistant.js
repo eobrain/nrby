@@ -21,7 +21,7 @@ function FirstAssistant() {
 
 /* this function is for setup tasks that have to happen when the scene is first created */
 FirstAssistant.prototype.setup = function () {
-    var ctl, callFlickr;
+    var ctl, callFlickr, showPhoto, placeName, photos, photoIndex, lastPhotoShowTime;
 
     ctl = this.controller;
 
@@ -39,8 +39,34 @@ FirstAssistant.prototype.setup = function () {
 		});
 	};
 
-	ctl.placeName = "";
+	placeName = "";
+	photos = [];
+	photoIndex = -1;
+	lastPhotoShowTime = 0;
+
+	function now() {
+	    var d = new Date();
+		return d.getTime();
+	}
+
 		
+	showPhoto = function () {
+	    var photo, url;
+		if (photoIndex >= 0 && photos.length > 0 && (now() - lastPhotoShowTime) > 10000) {
+			photo = photos[photoIndex];
+			photoIndex = (photoIndex + 1) % photos.length;
+			console.log("title=" + photo.title);
+			ctl.get("nrby-title").update(photo.title);
+			url = 'http://farm' + photo.farm +
+			  '.static.flickr.com/' + photo.server + 
+			  '/' +  photo.id +
+			  '_' +  photo.secret + '_d.jpg';
+			console.log("PHOTO URL " + url);
+			ctl.get("nrby-photo").src = url;
+			lastPhotoShowTime = now();
+		}
+	};
+
     ctl.serviceRequest('palm://com.palm.location', {
 	    method : 'startTracking',
 		parameters: { subscribe: true },
@@ -62,34 +88,23 @@ FirstAssistant.prototype.setup = function () {
 						}
 						place = places[0]; 
 
-						if (place.name === ctl.placeName) {
+						if (place.name === placeName) {
+						    showPhoto();
 						    return;
 						}
-						ctl.placeName = place.name;
-
+						placeName = place.name;
+						ctl.get("nrby-place").update(placeName);
 
 						flickrSearchHandler = function (transport) {
-						    var response, photos, photo, url, imgElement;
+						    var response;
 						    console.log("PHOTO SEARCH returns " + transport.responseText);
 							response = Mojo.parseJSON(transport.responseText);
 							if (response.stat !== "ok") {
 							    ctl.get("nrby-place").update("Error from Flickr " + transport.responseText);
 							} else {
 							    photos = response.photos.photo;
-								if (photos.length > 0) {
-								    photo = photos[0];
-									console.log("title=" + photo.title);
-									ctl.get("nrby-title").update(photo.title);
-									url = 'http://farm' + photo.farm +
-									  '.static.flickr.com/' + photo.server + 
-									  '/' +  photo.id +
-									  '_' +  photo.secret + '_d.jpg';
-									console.log("PHOTO URL " + url);
-									imgElement = ctl.get("nrby-photo");
-									console.log("imgElement " + imgElement);
-									imgElement.src = url;
-									ctl.get("nrby-place").update(place.name);
-								}
+								photoIndex = 0;
+								showPhoto();
 							}
 						};
 						callFlickr(
