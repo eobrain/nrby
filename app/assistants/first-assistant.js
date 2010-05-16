@@ -34,7 +34,7 @@ FirstAssistant.prototype.setup = function () {
 	        method: 'get',
 		    onSuccess: callback,
 		    onFailure: function () {
-		        ctl.get("place").update('Problem calling flickr.' + method);
+		        ctl.get("nrby-place").update('Problem calling flickr.' + method);
 			}
 		});
 	};
@@ -43,8 +43,8 @@ FirstAssistant.prototype.setup = function () {
 	    method : 'getCurrentPosition',
 		parameters: { responseTime: 2, subscribe: false },
 		onSuccess: function (response) {
-			ctl.get("latlon").update(response.latitude + "," + response.longitude);
-			ctl.get("place").update("Getting response from Flickr ...");
+		    console.log("Lat/Lon = " + response.latitude + "," + response.longitude);
+			ctl.get("nrby-place").update("Getting response from Flickr ...");
 			callFlickr(
 			    'places.findByLatLon',
 				'lat=' + response.latitude + '&lon=' + response.longitude,
@@ -52,7 +52,7 @@ FirstAssistant.prototype.setup = function () {
 				    var response, places, n, i, placeMsg, flickrSearchHandler;
 				    response = Mojo.parseJSON(transport.responseText);
 					if (response.stat !== "ok") {
-					    ctl.get("place").update("Error from Flickr " + transport.responseText);
+					    ctl.get("nrby-place").update("Error from Flickr " + transport.responseText);
 					} else {
 					    places = response.places.place;
 						n = places.length;
@@ -60,24 +60,26 @@ FirstAssistant.prototype.setup = function () {
 						for (i = 0; i < n; i += 1) {
 						    placeMsg += places[i].name;
                         }
-					    ctl.get("place").update(placeMsg);
+					    ctl.get("nrby-place").update(placeMsg);
 
 						flickrSearchHandler = function (transport) {
 						    var response, photos, photo, url, imgElement;
 						    console.log("PHOTO SEARCH returns " + transport.responseText);
 							response = Mojo.parseJSON(transport.responseText);
 							if (response.stat !== "ok") {
-							    ctl.get("place").update("Error from Flickr " + transport.responseText);
+							    ctl.get("nrby-place").update("Error from Flickr " + transport.responseText);
 							} else {
 							    photos = response.photos.photo;
 								if (photos.length > 0) {
 								    photo = photos[0];
+									console.log("title=" + photo.title);
+									ctl.get("nrby-title").update(photo.title);
 									url = 'http://farm' + photo.farm +
 									  '.static.flickr.com/' + photo.server + 
 									  '/' +  photo.id +
 									  '_' +  photo.secret + '_d.jpg';
 									console.log("PHOTO URL " + url);
-									imgElement = ctl.get("photo");
+									imgElement = ctl.get("nrby-photo");
 									console.log("imgElement " + imgElement);
 									imgElement.src = url;
 								}
@@ -95,7 +97,7 @@ FirstAssistant.prototype.setup = function () {
 				});
 		},
 	    onFailure: function (response) {
-		    ctl.get("latlon").update("Error getting GPS info: " + response);
+		    ctl.get("nrby-place").update("Error getting GPS info: " + response);
 		}
 	});
 

@@ -3,7 +3,7 @@
 # are made available under the terms of the Eclipse Public License v1.0
 # which is available at http://www.eclipse.org/legal/epl-v10.html
 
-
+JSLINT=java -classpath build/js.jar org.mozilla.javascript.tools.shell.Main build/jslint.js
 
 run: install
 	cd ..; palm-launch -c org.eamonn.nrby; palm-launch org.eamonn.nrby
@@ -15,4 +15,6 @@ install: ../org.eamonn.nrby_0.2.0_all.ipk
 	cd ..; palm-package nrby
 
 lint:
-	java -classpath build/js.jar org.mozilla.javascript.tools.shell.Main build/jslint.js app/assistants/first-assistant.js
+	$(JSLINT) app/assistants/first-assistant.js
+	$(JSLINT) app/assistants/stage-assistant.js
+

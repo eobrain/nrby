@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Copyright (c) 2010 Eamonn O'Brien-Strain, eob@well.com
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which is available at http://www.eclipse.org/legal/epl-v10.html
+
+#On a Palm emulator, simulate the GPS changing along a particular route
+
+echo "Press <enter> when prompted for password (five times)"
+
+ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/start {}
+ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/speedup {}
+ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/speedup {}
+ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/speedup {}
+ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/autodrive/speedup {}
+
