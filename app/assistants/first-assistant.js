@@ -67,7 +67,6 @@ FirstAssistant.prototype.setup = function () {
 						}
 						ctl.placeName = place.name;
 
-					    ctl.get("nrby-place").update(place.name);
 
 						flickrSearchHandler = function (transport) {
 						    var response, photos, photo, url, imgElement;
@@ -89,6 +88,7 @@ FirstAssistant.prototype.setup = function () {
 									imgElement = ctl.get("nrby-photo");
 									console.log("imgElement " + imgElement);
 									imgElement.src = url;
+									ctl.get("nrby-place").update(place.name);
 								}
 							}
 						};
