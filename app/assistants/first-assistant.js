@@ -32,18 +32,25 @@ FirstAssistant.prototype.setup = function () {
 		//noExtractFS : true	//optional, turn off using extractfs to speed up renders.
 	};
 	this.model = {
-		//backgroundImage : 'images/glacier.png',
 		background: 'black',  
-		onLeftFunction : this.wentLeft.bind(this),
-		onRightFunction : this.wentRight.bind(this)
+		onLeftFunction : function (event) {
+	    }.bind(this),
+		onRightFunction : function (event) {
+	    }.bind(this)
 	};
 
 	this.controller.setupWidget('ImageId', this.attributes, this.model);
 
 	this.myPhotoDivElement = $('ImageId');
-	this.imageViewChanged = this.imageViewChanged.bindAsEventListener(this);
 
-	Mojo.Event.listen(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, this.imageViewChanged);
+	Mojo.Event.listen(
+	    this.controller.get('ImageId'), 
+		Mojo.Event.imageViewChanged, 
+		function (event) {
+		    /* Do something when the image view changes */
+		    assistant.myPhotoDivElement.mojo.manualSize(Mojo.Environment.DeviceInfo.screenWidth, Mojo.Environment.DeviceInfo.screenHeight);
+		}.bindAsEventListener(this)
+	);
 
 
 
@@ -88,7 +95,6 @@ FirstAssistant.prototype.setup = function () {
 			assistant.myPhotoDivElement.mojo.leftUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
 			assistant.myPhotoDivElement.mojo.centerUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
 			assistant.myPhotoDivElement.mojo.rightUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
-			assistant.myPhotoDivElement.mojo.manualSize(Mojo.Environment.DeviceInfo.screenWidth, Mojo.Environment.DeviceInfo.screenHeight);
 			
 			//ctl.get("nrby-title").update(photo.title);
 		}
@@ -159,24 +165,7 @@ FirstAssistant.prototype.setup = function () {
 
 };
 
-FirstAssistant.prototype.imageViewChanged = function (event) {
-	/* Do something when the image view changes */
-	//this.showDialogBox("Image View Changed", "Flick image left and/or right to see other images.");
-};
 
-FirstAssistant.prototype.wentLeft = function (event) {
-	/* Do something when the user flicks to the right 
-	 * like picking a different image for the left image.
-	 */
-	//this.showDialogBox("Image View Changed", "Flicked right to see left picture.");
-};
-
-FirstAssistant.prototype.wentRight = function (event) {
-	/* Do something when the user flicks to the left 
-	 * like picking a different image for the right image.
-	 */
-	//this.showDialogBox("Image View Changed", "Flicked left to see right picture.");
-};
 
 FirstAssistant.prototype.activate = function (event) {
 	/* put in event handlers here that should only be in effect when this scene is active. For
