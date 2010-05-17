@@ -79,6 +79,13 @@ FirstAssistant.prototype.setup = function () {
 		return d.getTime();
 	}
 
+	function photoUrlBase(photo) {
+	    return 'http://farm' + photo.farm +
+			  '.static.flickr.com/' + photo.server + 
+			  '/' +  photo.id +
+			  '_' +  photo.secret;
+	}
+
 		
 	function showPhoto() {
 	    var photo, urlBase;
@@ -86,10 +93,7 @@ FirstAssistant.prototype.setup = function () {
 			photo = photos[photoIndex];
 			photoIndex = (photoIndex + 1) % photos.length;
 			console.log("title=" + photo.title);
-			urlBase = 'http://farm' + photo.farm +
-			  '.static.flickr.com/' + photo.server + 
-			  '/' +  photo.id +
-			  '_' +  photo.secret;
+			urlBase = photoUrlBase(photo);
 			console.log("PHOTO URL BASE " + urlBase);
 			//ctl.get("nrby-photo").src = url;
 			assistant.myPhotoDivElement.mojo.leftUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
