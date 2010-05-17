@@ -22,7 +22,7 @@ function FirstAssistant() {
 
 /* this function is for setup tasks that have to happen when the scene is first created */
 FirstAssistant.prototype.setup = function () {
-    var assistant, ctl, callFlickr, showPhoto, placeName, photos, photoIndex, prevTime;
+    var assistant, ctl, placeName, photos, photoIndex, prevTime;
 
 
 	assistant = this; //for use in lambda functions
@@ -54,7 +54,7 @@ FirstAssistant.prototype.setup = function () {
 
 
 
-    callFlickr = function (method, args, callback) {
+    function callFlickr(method, args, callback) {
 	    var url, req;
 		console.log("CALLING FLICKR " + method + "(" + args + ")");
 	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
@@ -67,7 +67,7 @@ FirstAssistant.prototype.setup = function () {
 			    assistant.showDialogBox("Problem calling Flickr", method);
 			}
 		});
-	};
+	}
 
 	placeName = "";
 	photos = [];
@@ -80,7 +80,7 @@ FirstAssistant.prototype.setup = function () {
 	}
 
 		
-	showPhoto = function () {
+	function showPhoto() {
 	    var photo, urlBase;
 		if (photoIndex >= 0 && photos.length > 0) {
 			photo = photos[photoIndex];
@@ -98,7 +98,7 @@ FirstAssistant.prototype.setup = function () {
 			
 			//ctl.get("nrby-title").update(photo.title);
 		}
-	};
+	}
 
     ctl.serviceRequest('palm://com.palm.location', {
 	    method : 'startTracking',
