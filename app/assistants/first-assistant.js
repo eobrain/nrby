@@ -88,7 +88,7 @@ FirstAssistant.prototype.setup = function () {
 			assistant.myPhotoDivElement.mojo.leftUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
 			assistant.myPhotoDivElement.mojo.centerUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
 			assistant.myPhotoDivElement.mojo.rightUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
-			assistant.myPhotoDivElement.mojo.manualSize(Mojo.Environment.DeviceInfo.screenHeight, Mojo.Environment.DeviceInfo.screenWidth);
+			assistant.myPhotoDivElement.mojo.manualSize(Mojo.Environment.DeviceInfo.screenWidth, Mojo.Environment.DeviceInfo.screenHeight);
 			
 			//ctl.get("nrby-title").update(photo.title);
 		}
