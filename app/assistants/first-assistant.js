@@ -10,7 +10,7 @@
 /*jslint devel: true */
 
 /* declare globals to keep JSLint happy */
-var Ajax, Mojo, $;
+var Ajax, Mojo, $, window;
 
 function FirstAssistant() {
 	/* this is the creator function for your scene assistant object. It will be passed all the 
@@ -20,9 +20,31 @@ function FirstAssistant() {
 }
 
 
+FirstAssistant.prototype.orientationChanged = function (orientation) {
+    var viewer;
+    // you will be passed "left", "right", "up", or "down" (and maybe others?)
+    console.log("orientationChanged(" + orientation + ")");
+	viewer = $('ImageId');
+	switch (orientation) {
+	case "up":   //normal portrait
+	case "down": //reverse portrait
+		viewer.mojo.manualSize(Mojo.Environment.DeviceInfo.screenWidth, 
+							   Mojo.Environment.DeviceInfo.screenHeight);
+		break;
+	case "left":  //left side down
+	case "right": //right side down
+		viewer.mojo.manualSize(Mojo.Environment.DeviceInfo.screenHeight, 
+							 Mojo.Environment.DeviceInfo.screenWidth);
+		break;
+	default:
+		//do nothing
+		break;
+	}
+};
+
 /* this function is for setup tasks that have to happen when the scene is first created */
 FirstAssistant.prototype.setup = function () {
-    var assistant, viewer, ctl, placeName, photos, photoIndex, prevTime;
+    var assistant, viewer, appCtl, ctl, placeName, photos, photoIndex, prevTime, resize;
 
 
 	assistant = this; //for use in lambda functions
@@ -68,15 +90,13 @@ FirstAssistant.prototype.setup = function () {
 
 	this.controller.setupWidget('ImageId', this.attributes, this.model);
 
+    appCtl = Mojo.Controller.getAppController();
+    resize = function (event) {
+	    console.log(" ====== resize(" + event + ")");
+	    FirstAssistant.prototype.orientationChanged(appCtl.getScreenOrientation());
+	}.bindAsEventListener(this);
 
-	Mojo.Event.listen(
-	    this.controller.get('ImageId'), 
-		Mojo.Event.imageViewChanged, 
-		function (event) {
-		    /* Do something when the image view changes */
-		    viewer.mojo.manualSize(Mojo.Environment.DeviceInfo.screenWidth, Mojo.Environment.DeviceInfo.screenHeight);
-		}.bindAsEventListener(this)
-	);
+	Mojo.Event.listen(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, resize);
 
 
 
