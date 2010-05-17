@@ -10,7 +10,7 @@
 /*jslint devel: true */
 
 /* declare globals to keep JSLint happy */
-var Ajax, Mojo;
+var Ajax, Mojo, $;
 
 function FirstAssistant() {
 	/* this is the creator function for your scene assistant object. It will be passed all the 
@@ -19,14 +19,36 @@ function FirstAssistant() {
 	   that needs the scene controller should be done in the setup function below. */
 }
 
+
 /* this function is for setup tasks that have to happen when the scene is first created */
 FirstAssistant.prototype.setup = function () {
-    var ctl, callFlickr, showPhoto, placeName, photos, photoIndex, prevTime;
+    var assistant, ctl, callFlickr, showPhoto, placeName, photos, photoIndex, prevTime;
 
+	assistant = this; //for use in lambda functions
     ctl = this.controller;
+
+	this.attributes = {
+		//noExtractFS : true	//optional, turn off using extractfs to speed up renders.
+	};
+	this.model = {
+		//backgroundImage : 'images/glacier.png',
+		background: 'black',  
+		onLeftFunction : this.wentLeft.bind(this),
+		onRightFunction : this.wentRight.bind(this)
+	};
+
+	this.controller.setupWidget('ImageId', this.attributes, this.model);
+
+	this.myPhotoDivElement = $('ImageId');
+	this.imageViewChanged = this.imageViewChanged.bindAsEventListener(this);
+
+	Mojo.Event.listen(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, this.imageViewChanged);
+
+
 
     callFlickr = function (method, args, callback) {
 	    var url, req;
+		console.log("CALLING FLICKR " + method + "(" + args + ")");
 	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
 		'&api_key=' + Mojo.Controller.appInfo.flickrApiKey +
 		'&' + args + '&format=json&nojsoncallback=1';
@@ -34,7 +56,7 @@ FirstAssistant.prototype.setup = function () {
 	        method: 'get',
 		    onSuccess: callback,
 		    onFailure: function () {
-		        ctl.get("nrby-place").update('Problem calling flickr.' + method);
+			    assistant.showDialogBox("Problem calling Flickr", method);
 			}
 		});
 	};
@@ -51,18 +73,22 @@ FirstAssistant.prototype.setup = function () {
 
 		
 	showPhoto = function () {
-	    var photo, url;
+	    var photo, urlBase;
 		if (photoIndex >= 0 && photos.length > 0) {
 			photo = photos[photoIndex];
 			photoIndex = (photoIndex + 1) % photos.length;
 			console.log("title=" + photo.title);
-			url = 'http://farm' + photo.farm +
+			urlBase = 'http://farm' + photo.farm +
 			  '.static.flickr.com/' + photo.server + 
 			  '/' +  photo.id +
-			  '_' +  photo.secret + '_d.jpg';
-			console.log("PHOTO URL " + url);
-			ctl.get("nrby-photo").src = url;
-			ctl.get("nrby-title").update(photo.title);
+			  '_' +  photo.secret;
+			console.log("PHOTO URL BASE " + urlBase);
+			//ctl.get("nrby-photo").src = url;
+			assistant.myPhotoDivElement.mojo.leftUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
+			assistant.myPhotoDivElement.mojo.centerUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
+			assistant.myPhotoDivElement.mojo.rightUrlProvided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
+			
+			//ctl.get("nrby-title").update(photo.title);
 		}
 	};
 
@@ -83,9 +109,10 @@ FirstAssistant.prototype.setup = function () {
 				'lat=' + response.latitude + '&lon=' + response.longitude,
 				function (transport) {
 				    var response, places, place, n, i, placeMsg, flickrSearchHandler;
+					console.log("FLICKR RETURNED " + transport.responseText);
 				    response = Mojo.parseJSON(transport.responseText);
 					if (response.stat !== "ok") {
-					    ctl.get("nrby-place").update("Error from Flickr " + transport.responseText);
+						assistant.showDialogBox("Error from Fickr", transport.responseText);
 					} else {
 					    places = response.places.place;
 						if (places.length === 0) {
@@ -99,14 +126,14 @@ FirstAssistant.prototype.setup = function () {
 						    return;
 						}
 						placeName = place.name;
-						ctl.get("nrby-place").update(placeName);
+						//ctl.get("nrby-place").update(placeName);
 
 						flickrSearchHandler = function (transport) {
 						    var response;
 						    console.log("PHOTO SEARCH returns " + transport.responseText);
 							response = Mojo.parseJSON(transport.responseText);
 							if (response.stat !== "ok") {
-							    ctl.get("nrby-place").update("Error from Flickr " + transport.responseText);
+								assistant.showDialogBox("Error from Fickr", transport.responseText);
 							} else {
 							    photos = response.photos.photo;
 								photoIndex = 0;
@@ -124,10 +151,29 @@ FirstAssistant.prototype.setup = function () {
 			);
 		},
 	    onFailure: function (response) {
-		    ctl.get("nrby-place").update("Error getting GPS info: " + response);
+		    assistant.showDialogBox("Problem calling Flickr", response);
 		}
 	});
 
+};
+
+FirstAssistant.prototype.imageViewChanged = function (event) {
+	/* Do something when the image view changes */
+	//this.showDialogBox("Image View Changed", "Flick image left and/or right to see other images.");
+};
+
+FirstAssistant.prototype.wentLeft = function (event) {
+	/* Do something when the user flicks to the right 
+	 * like picking a different image for the left image.
+	 */
+	//this.showDialogBox("Image View Changed", "Flicked right to see left picture.");
+};
+
+FirstAssistant.prototype.wentRight = function (event) {
+	/* Do something when the user flicks to the left 
+	 * like picking a different image for the right image.
+	 */
+	//this.showDialogBox("Image View Changed", "Flicked left to see right picture.");
 };
 
 FirstAssistant.prototype.activate = function (event) {
@@ -143,4 +189,15 @@ FirstAssistant.prototype.deactivate = function (event) {
 FirstAssistant.prototype.cleanup = function (event) {
 	/* this function should do any cleanup needed before the scene is destroyed as 
 	   a result of being popped off the scene stack */
+	Mojo.Event.stopListening(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, this.imageViewChanged);
 };
+
+// This function will popup a dialog, displaying the message passed in.
+FirstAssistant.prototype.showDialogBox = function (title, message) {
+    this.controller.showAlertDialog({
+	    onChoose: function (value) {},
+		title: title,
+		message: message,
+		choices: [ {label: 'OK', value: 'OK', type: 'color'} ]
+	});
+}; 
