@@ -44,7 +44,7 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 
 /* this function is for setup tasks that have to happen when the scene is first created */
 FirstAssistant.prototype.setup = function () {
-    var assistant, viewer, appCtl, ctl, placeName, photos, photoIndex, prevTime, resize;
+    var assistant, viewer, appCtl, ctl, placeName, photos, photoIndex, prevTime;
 
 
 	assistant = this; //for use in lambda functions
@@ -91,12 +91,12 @@ FirstAssistant.prototype.setup = function () {
 	this.controller.setupWidget('ImageId', this.attributes, this.model);
 
     appCtl = Mojo.Controller.getAppController();
-    resize = function (event) {
-	    console.log(" ====== resize(" + event + ")");
+    this.imageViewChanged = function (event) {
+	    console.log(" ====== imageViewChanged(" + event + ")");
 	    FirstAssistant.prototype.orientationChanged(appCtl.getScreenOrientation());
 	}.bindAsEventListener(this);
 
-	Mojo.Event.listen(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, resize);
+	Mojo.Event.listen(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, this.imageViewChanged);
 
 
 
@@ -233,7 +233,7 @@ FirstAssistant.prototype.deactivate = function (event) {
 FirstAssistant.prototype.cleanup = function (event) {
 	/* this function should do any cleanup needed before the scene is destroyed as 
 	   a result of being popped off the scene stack */
-	//Mojo.Event.stopListening(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, this.imageViewChanged);
+	Mojo.Event.stopListening(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, this.imageViewChanged);
 };
 
 // This function will popup a dialog, displaying the message passed in.
