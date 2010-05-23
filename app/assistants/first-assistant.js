@@ -44,12 +44,24 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 
 /* this function is for setup tasks that have to happen when the scene is first created */
 FirstAssistant.prototype.setup = function () {
-    var assistant, viewer, appCtl, ctl, placeName, photos, photoIndex, prevTime;
+    var assistant, status, viewer, appCtl, ctl, placeName, photos, photoIndex, prevTime;
 
+	status = $('nrbyStatus');
+
+	function setStatus(message) {
+	    status.update(message);
+	    status.style.display = 'block';
+	}
+	function resetStatus() {
+	    status.update('-------');
+	    status.style.display = 'none';	  
+	}
 
 	assistant = this; //for use in lambda functions
     ctl = this.controller;
 	viewer = $('ImageId');
+
+	ctl.enableFullScreenMode(true);
 
 	function photoUrlBase(photo) {
 	    return 'http://farm' + photo.farm +
@@ -88,6 +100,18 @@ FirstAssistant.prototype.setup = function () {
 	    }.bind(this)
 	};
 
+    /*this.controller.setupWidget("progresspillId",
+        this.attributes = {
+            title: "Progress Pill",
+            image: "images/header-icon.png",
+            modelProperty: "progress"
+        },
+        this.model = {
+            iconPath: "../images/progress-bar-background.png",
+            progress: 1
+        }
+		);*/
+
 	this.controller.setupWidget('ImageId', this.attributes, this.model);
 
     appCtl = Mojo.Controller.getAppController();
@@ -100,17 +124,22 @@ FirstAssistant.prototype.setup = function () {
 
 
 
-    function callFlickr(method, args, callback) {
+    function callFlickr(message, method, args, callback) {
 	    var url, req;
-		console.log("CALLING FLICKR " + method + "(" + args + ")");
+		console.log(message + " CALLING FLICKR " + method + "(" + args + ")");
 	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
 		'&api_key=' + Mojo.Controller.appInfo.flickrApiKey +
 		'&' + args + '&format=json&nojsoncallback=1';
+		setStatus(message + '...');
 		req = new Ajax.Request(url, {
-	        method: 'get',
-		    onSuccess: callback,
+		    method: 'get',
+			onSuccess: function (transport) {
+			    resetStatus();
+			    callback(transport);
+			},
 		    onFailure: function () {
-			    assistant.showDialogBox("Problem calling Flickr", method);
+			    resetStatus();
+			    assistant.showDialogBox("Problem with " + message, method);
 			}
 		});
 	}
@@ -140,17 +169,19 @@ FirstAssistant.prototype.setup = function () {
 	    method : 'startTracking',
 		parameters: { subscribe: true },
 		onSuccess: function (response) {
+		    var latLon = 'lat=' + response.latitude + '&lon=' + response.longitude;
 
 		    /* throttle the calls to Flickr */
-		    if ((now() - prevTime) < 60000) {
+		    if ((now() - prevTime) < 60000 /*Mojo.Controller.appInfo.periodMillisec*/) {
 			    return;  /* too soon */
 			}
 			prevTime = now();
 
-		    console.log("Lat/Lon = " + response.latitude + "," + response.longitude);
+		    console.log(latLon);
 			callFlickr(
+				'Asking Flickr what is the name of this location',
 			    'places.findByLatLon',
-				'lat=' + response.latitude + '&lon=' + response.longitude,
+				latLon,
 				function (transport) {
 				    var response, places, place, n, i, placeMsg, flickrSearchHandler;
 					console.log("FLICKR RETURNED " + transport.responseText);
@@ -160,7 +191,8 @@ FirstAssistant.prototype.setup = function () {
 					} else {
 					    places = response.places.place;
 						if (places.length === 0) {
-						    console.log("FLickr could not find a place");
+						    console.log("Flickr could not find a place");
+							assistant.showDialogBox("Flickr could not find a place at  = " + latLon);
 						    return;
 						}
 						place = places[0]; 
@@ -202,6 +234,7 @@ FirstAssistant.prototype.setup = function () {
 						};
 						console.log("about to call flickr.photos.search ...");
 						callFlickr(
+							'Searching ' + placeName,
 						    'photos.search',
 							'per_page=10&sort=interestingness-desc&place_id=' + place.place_id,
 							flickrSearchHandler
@@ -216,7 +249,8 @@ FirstAssistant.prototype.setup = function () {
 		}
 	});
 
-};
+	//this.controller.setInitialFocusedElement(null);
+}; //setup
 
 
 

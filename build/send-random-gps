@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Copyright (c) 2010 Eamonn O'Brien-Strain, eob@well.com
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which is available at http://www.eclipse.org/legal/epl-v10.html
+
+#On a Palm emulator, simulate the GPS changing along a particular route
+
+Echo "Press <enter> when prompted for password"
+
+set -x
+jot -r 30 0 180 | fmt -8 | awk '{print "ssh -p 5522 -l root localhost luna-send -n 1 luna://com.palm.pmradiosimulator/set_position '\''{\\\"lat\\\":\\\"" $1-90 "\\\",\\\"long\\\":\\\"" 2*($2-90) "\\\"}'\''"}' > /tmp/set_position_script
+sh +x /tmp/set_position_script
+

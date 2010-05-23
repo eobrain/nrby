@@ -1,6 +1,6 @@
 {
 	"id": "org.eamonn.nrby",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"vendor": "Eamonn O'Brien-Strain",
 	"type": "web",
 	"main": "index.html",
