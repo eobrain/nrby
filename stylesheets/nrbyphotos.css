@@ -1,2 +1,2 @@
 #ImageId    {height: 100%; }
-#nrbyStatus {font-size: small; display:none}
+#nrbyStatus {font-size: small; display:none; overflow:hidden;}
