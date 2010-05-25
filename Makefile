@@ -17,6 +17,7 @@ install: ../org.eamonn.nrby_$(VERSION)_all.ipk
 	cd ..; palm-package nrby
 
 lint:
+	$(JSLINT) app/models/photos.js
 	$(JSLINT) app/assistants/first-assistant.js
 	$(JSLINT) app/assistants/stage-assistant.js
 

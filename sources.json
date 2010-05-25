@@ -1,5 +1,6 @@
 [
     {"source": "app/assistants/stage-assistant.js"},
+    {"source": "app/models/photos.js"},
     {
         "scenes": "first",
         "source": "app/assistants/first-assistant.js"
