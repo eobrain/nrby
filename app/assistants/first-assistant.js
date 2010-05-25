@@ -10,7 +10,7 @@
 /*jslint devel: true */
 
 /* declare globals to keep JSLint happy */
-var Ajax, Mojo, $, window; //framework
+var Mojo, $, window; //framework
 var Photos;                //models
 
 function FirstAssistant() {
@@ -67,7 +67,7 @@ FirstAssistant.prototype.setup = function () {
 	ctl.enableFullScreenMode(true);
 
 
-	photos = new Photos();
+	photos = new Photos(assistant.status, assistant.showDialogBox);
 
     assistant.photos = photos;
 
@@ -81,11 +81,11 @@ FirstAssistant.prototype.setup = function () {
 	this.model = {
 		background: 'black',  
 		onLeftFunction : function (event) {
-		    photos.index = photos.leftIndex();
+		    photos.moveLeft();
 		    assistant.provideUrl(viewer.mojo.leftUrlProvided, photos.urlBaseLeft());
 	    }.bind(this),
 		onRightFunction : function (event) {
-		    photos.index = photos.rightIndex();
+		    photos.moveRight();
 		    assistant.provideUrl(viewer.mojo.rightUrlProvided, photos.urlBaseRight());
 	    }.bind(this)
 	};
@@ -111,66 +111,19 @@ FirstAssistant.prototype.setup = function () {
 
 
 FirstAssistant.prototype.activate = function (event) {
-    var assistant, photos, placeName, prevTime, viewer;
+    var assistant, photos, prevTime, viewer;
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 
 	assistant = this; //for use in lambda functions
 	photos = assistant.photos;
 	prevTime = 0;
-	placeName = "";
 	viewer = $('ImageId');
 
 	function now() {
 	    var d = new Date();
 		return d.getTime();
 	}
-
-
-    function callFlickr(message, method, args, callback) {
-	    var url, req;
-		console.log(message + " CALLING FLICKR " + method + "(" + args + ")");
-	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
-		'&api_key=' + Mojo.Controller.appInfo.flickrApiKey +
-		'&' + args + '&format=json&nojsoncallback=1';
-		assistant.status.set(message + '...');
-		req = new Ajax.Request(url, {
-		    method: 'get',
-			onSuccess: function (transport) {
-			    assistant.status.reset();
-				var response, places, place, n, i, placeMsg, flickrSearchHandler;
-				console.log("callFlickr callback " + transport.responseText);
-				if (transport.responseText === '') {
-					console.log("FLICKR RETURNED EMPTY RESPONSE");
-					assistant.showDialogBox(message + " -- fail");
-					return;
-				}
-				console.log("FLICKR RETURNED " + transport.responseText);
-				response = Mojo.parseJSON(transport.responseText);
-				if (response.stat !== "ok") {
-					assistant.showDialogBox("Error from Fickr", transport.responseText);
-				} else {
-				    callback(response);
-				}
-			},
-		    onFailure: function () {
-			    assistant.status.reset();
-			    assistant.showDialogBox("Problem with " + message, method);
-			}
-		});
-	}
-
-	function showPhoto() {
-		console.log("showPhoto() photoIndex=" + photos.index);
-		if (photos.index >= 0 && photos.array.length > 0) {
-			assistant.status.set('Fetching photo ' + photos.array[photos.index].title + '...');
-		    assistant.provideUrl(viewer.mojo.leftUrlProvided,   photos.urlBaseLeft());
-		    assistant.provideUrl(viewer.mojo.centerUrlProvided, photos.urlBaseCenter());
-		    assistant.provideUrl(viewer.mojo.rightUrlProvided,  photos.urlBaseRight());
-		}
-		console.log("FINISHED showPhoto()");
-	}
-
 
 
     this.controller.serviceRequest('palm://com.palm.location', {
@@ -192,57 +145,11 @@ FirstAssistant.prototype.activate = function (event) {
 			prevTime = now();
 
 		    console.log(latLon);
-			callFlickr(
-				'Asking Flickr what is the name of this location',
-			    'places.findByLatLon',
-				latLon,
-				function (response) {
-				    var places, place, n, i, placeMsg, flickrSearchHandler;
-					places = response.places.place;
-					if (places.length === 0) {
-						console.log("Flickr could not find a place");
-						assistant.showDialogBox("Flickr could not find a place at  = " + latLon);
-						return;
-					}
-					place = places[0]; 
-
-					if (place.name === placeName) {
-						//showPhoto();
-						return;
-					}
-					placeName = place.name;
-					//ctl.get("nrby-place").update(placeName);
-
-					flickrSearchHandler = function (response) {
-						n = response.photos.photo.length;
-
-						console.log("photo search returned " + n + " photos");
-
-						// Arrange photos ...,9,7,5,3,1,0,2,4,6,8,...
-						// so that most interesting are
-						// closest to center
-						for (i = 0; i < n; i += 1) {
-							if (i % 2 === 0) { //even
-								photos.array[n / 2  +  i / 2] = response.photos.photo[i];
-								console.log(i + " --> " + (n / 2  +  i / 2));
-							} else { //odd
-								photos.array[n / 2  -  (i + 1) / 2] = response.photos.photo[i];
-								console.log(i + " --> " + (n / 2  -  (i + 1) / 2));
-							}
-						}
-						photos.index = n / 2;
-						showPhoto();
-					};
-					console.log("about to call flickr.photos.search ...");
-					callFlickr(
-						'Searching ' + placeName,
-						'photos.search',
-						'per_page=10&sort=interestingness-desc&place_id=' + place.place_id,
-						flickrSearchHandler
-						);
-
-				}
-			);
+			photos.fetch(latLon, function (urlBaseLeft, urlBaseCenter, urlBaseRight) {
+				assistant.provideUrl(viewer.mojo.leftUrlProvided,   urlBaseLeft);
+				assistant.provideUrl(viewer.mojo.centerUrlProvided, urlBaseCenter);
+				assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlBaseRight);
+			});
 		},
 	    onFailure: function (response) {
 		    assistant.showDialogBox("Problem calling Flickr", response);
