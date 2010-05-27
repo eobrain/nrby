@@ -67,8 +67,8 @@ FirstAssistant.prototype.setup = function () {
 
 	ctl.enableFullScreenMode(true);
 
-	this.provideUrl = function (provided, urlBase) {
-	    provided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
+	this.provideUrl = function (provided, urls) {
+	    provided(urls[1], urls[0]);
 	};
 
 	this.attributes = {
@@ -78,11 +78,11 @@ FirstAssistant.prototype.setup = function () {
 		background: 'black',  
 		onLeftFunction : function (event) {
 		    assistant.photos.moveLeft();
-		    assistant.provideUrl(viewer.mojo.leftUrlProvided, assistant.photos.urlBaseLeft());
+		    assistant.provideUrl(viewer.mojo.leftUrlProvided, assistant.photos.urlsLeft());
 	    }.bind(this),
 		onRightFunction : function (event) {
 		    assistant.photos.moveRight();
-		    assistant.provideUrl(viewer.mojo.rightUrlProvided, assistant.photos.urlBaseRight());
+		    assistant.provideUrl(viewer.mojo.rightUrlProvided, assistant.photos.urlsRight());
 	    }.bind(this)
 	};
 
@@ -115,10 +115,10 @@ FirstAssistant.prototype.activate = function (event) {
 	viewer = $('ImageId');
 	assistant = this; //for use in lambda functions
 
-	function showPhotos(urlBaseLeft, urlBaseCenter, urlBaseRight) {
-	    assistant.provideUrl(viewer.mojo.leftUrlProvided,   urlBaseLeft);
-	    assistant.provideUrl(viewer.mojo.centerUrlProvided, urlBaseCenter);
-	    assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlBaseRight);
+	function showPhotos(urlsLeft, urlsCenter, urlsRight) {
+	    assistant.provideUrl(viewer.mojo.leftUrlProvided,   urlsLeft);
+	    assistant.provideUrl(viewer.mojo.centerUrlProvided, urlsCenter);
+	    assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlsRight);
 	}
 
 	assistant.photos = new Photos(assistant.status, assistant.showDialogBox, showPhotos);

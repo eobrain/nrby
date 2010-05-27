@@ -45,17 +45,10 @@ function Photos(status, alertUser, showPhotos) {
 		}
 		if (index >= 0 && array.length > 0) {
 			status.set('Fetching photo ' + array[index].title + '...');
-			showPhotos(self.urlBaseLeft(), self.urlBaseCenter(), self.urlBaseRight());
+			showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
 		}
 	}
 
-
-	function photoUrlBase(photo) {
-		return 'http://farm' + photo.farm +
-			  '.static.flickr.com/' + photo.server + 
-			  '/' +  photo.id +
-			  '_' +  photo.secret;
-	}
 
     function callFlickr(message, method, args, callback) {
 	    var url, req;
@@ -109,22 +102,28 @@ function Photos(status, alertUser, showPhotos) {
 	};
 
 	self.rightIndex = function () {
-	    return array[(index + 1) % array.length];
+	    return (index + 1) % array.length;
 	};
 
-	self.urlBaseLeft = function () {
-	    console.log("urlBaseLeft  photoIndex=" + index + " photos.length=" + array.length);
-		return photoUrlBase(array[self.leftIndex()]);
+	function urls(i) {
+	    var photo = array[i];
+		console.log("i=" + i + ",photo=" + photo);
+	    return [photo.url_t, photo.url_m];
+	}
+
+	self.urlsLeft = function () {
+	    console.log("urlsLeft()");
+	    return urls(self.leftIndex());
 	};
 
-	self.urlBaseCenter = function () {
-		console.log("urlBaseCenter  photoIndex="  + index + " photos.length=" + array.length);
-		return photoUrlBase(array[index]);
+	self.urlsCenter = function () {
+	    console.log("urlsCenter()");
+		return urls(index);
 	};
 
-	self.urlBaseRight = function () {
-		console.log("urlBaseRight  photoIndex=" + index + " photos.length=" + array.length);
-		return photoUrlBase(self.rightIndex());
+	self.urlsRight = function () {
+	    console.log("urlsRignt()");
+		return urls(self.rightIndex());
 	};
 
 	self.fetch = function (latLon) {
