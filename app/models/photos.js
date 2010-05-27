@@ -9,9 +9,10 @@
 
 /*jslint devel: true */
 /* declare globals to keep JSLint happy */
-var Ajax, Mojo;  //framework
+var Ajax, Mojo;   //framework
+var nrbyInitData; //model
 
-function Photos(status, alertUser) {
+function Photos(status, alertUser, showPhotos) {
     var self, index, array, placeName;
     self = this;
 
@@ -20,6 +21,34 @@ function Photos(status, alertUser) {
     index = -1;
 	array = [];
 	placeName = "";
+
+	function setPhotos(response) {
+		var n, i;
+		n = response.photos.photo.length;
+
+		console.log("photo search returned " + n + " photos");
+
+		// Arrange photos ...,9,7,5,3,1,0,2,4,6,8,...
+		// so that most interesting are
+		// closest to center
+		for (i = 0; i < n; i += 1) {
+			if (i % 2 === 0) { //even
+				array[n / 2  +  i / 2] = response.photos.photo[i];
+				console.log(i + " --> " + (n / 2  +  i / 2));
+			} else { //odd
+				array[n / 2  -  (i + 1) / 2] = response.photos.photo[i];
+				console.log(i + " --> " + (n / 2  -  (i + 1) / 2));
+			}
+		}
+		if (index === -1 || index >= n) {
+		    index = n / 2;
+		}
+		if (index >= 0 && array.length > 0) {
+			status.set('Fetching photo ' + array[index].title + '...');
+			showPhotos(self.urlBaseLeft(), self.urlBaseCenter(), self.urlBaseRight());
+		}
+	}
+
 
 	function photoUrlBase(photo) {
 		return 'http://farm' + photo.farm +
@@ -98,60 +127,14 @@ function Photos(status, alertUser) {
 		return photoUrlBase(self.rightIndex());
 	};
 
-	self.fetch = function (latLon, showPhotos) {
+	self.fetch = function (latLon) {
 		callFlickr(
-			'Asking Flickr what is the name of this location',
-			'places.findByLatLon',
-			latLon,
-			function (response) {
-				var places, place, n, i, placeMsg, flickrSearchHandler;
-				places = response.places.place;
-				if (places.length === 0) {
-					console.log("Flickr could not find a place");
-					alertUser("Flickr could not find a place at  = " + latLon);
-					return;
-				}
-				place = places[0]; 
-
-				if (place.name === placeName) {
-					return;
-				}
-				placeName = place.name;
-				//ctl.get("nrby-place").update(placeName);
-
-				flickrSearchHandler = function (response) {
-					n = response.photos.photo.length;
-
-					console.log("photo search returned " + n + " photos");
-
-					// Arrange photos ...,9,7,5,3,1,0,2,4,6,8,...
-					// so that most interesting are
-					// closest to center
-					for (i = 0; i < n; i += 1) {
-						if (i % 2 === 0) { //even
-							array[n / 2  +  i / 2] = response.photos.photo[i];
-							console.log(i + " --> " + (n / 2  +  i / 2));
-						} else { //odd
-							array[n / 2  -  (i + 1) / 2] = response.photos.photo[i];
-							console.log(i + " --> " + (n / 2  -  (i + 1) / 2));
-						}
-					}
-					index = n / 2;
-					if (index >= 0 && array.length > 0) {
-					    status.set('Fetching photo ' + array[index].title + '...');
-					    showPhotos(self.urlBaseLeft(), self.urlBaseCenter(), self.urlBaseRight());
-					}
-				};
-				console.log("about to call flickr.photos.search ...");
-				callFlickr(
-					'Searching ' + placeName,
-					'photos.search',
-					'per_page=10&sort=interestingness-desc&place_id=' + place.place_id,
-					flickrSearchHandler
-					);
-
-			}
+			'searching Flickr for nearby photos',
+			'photos.search',
+			latLon + '&radius=31&min_upload_date=0&extras=geo,date_taken,url_m,url_t&per_page=100',
+			setPhotos
 		);
 	};
 
+	setPhotos(nrbyInitData);
 }

@@ -25,3 +25,6 @@ appinfo.json: appinfo-template.json
 	cp appinfo-template.json $@
 	: EDIT appinfo.json FILE AND INSERT YOUR FLICKR API KEY
 	false
+
+app/models/initdata.js:
+	echo "nrbyInitData=`curl 'http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=d7e83530154cf4040ead2f7712b57adb&sort=interestingness-desc&lat=37.767806&lon=-122.43735&radius=0.15&min_upload_date=0&extras=geo,date_taken,url_m,url_t,owner_name&per_page=100&format=json&nojsoncallback=1'`;" >$@

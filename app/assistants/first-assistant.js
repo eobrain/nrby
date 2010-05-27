@@ -45,7 +45,9 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 
 /* this function is for setup tasks that have to happen when the scene is first created */
 FirstAssistant.prototype.setup = function () {
-    var assistant, viewer, appCtl, ctl, photos;
+    var assistant, viewer, appCtl, ctl;
+
+	viewer = $('ImageId');
 
 	assistant = this; //for use in lambda functions
 
@@ -62,14 +64,8 @@ FirstAssistant.prototype.setup = function () {
 	};
 
     ctl = this.controller;
-	viewer = $('ImageId');
 
 	ctl.enableFullScreenMode(true);
-
-
-	photos = new Photos(assistant.status, assistant.showDialogBox);
-
-    assistant.photos = photos;
 
 	this.provideUrl = function (provided, urlBase) {
 	    provided(urlBase + '_d.jpg', urlBase + '_m_d.jpg');
@@ -81,12 +77,12 @@ FirstAssistant.prototype.setup = function () {
 	this.model = {
 		background: 'black',  
 		onLeftFunction : function (event) {
-		    photos.moveLeft();
-		    assistant.provideUrl(viewer.mojo.leftUrlProvided, photos.urlBaseLeft());
+		    assistant.photos.moveLeft();
+		    assistant.provideUrl(viewer.mojo.leftUrlProvided, assistant.photos.urlBaseLeft());
 	    }.bind(this),
 		onRightFunction : function (event) {
-		    photos.moveRight();
-		    assistant.provideUrl(viewer.mojo.rightUrlProvided, photos.urlBaseRight());
+		    assistant.photos.moveRight();
+		    assistant.provideUrl(viewer.mojo.rightUrlProvided, assistant.photos.urlBaseRight());
 	    }.bind(this)
 	};
 
@@ -104,6 +100,7 @@ FirstAssistant.prototype.setup = function () {
 
 
 
+
 		
 	//this.controller.setInitialFocusedElement(null);
 }; //setup
@@ -111,14 +108,25 @@ FirstAssistant.prototype.setup = function () {
 
 
 FirstAssistant.prototype.activate = function (event) {
-    var assistant, photos, prevTime, viewer;
+    var assistant, prevTime, viewer;
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 
-	assistant = this; //for use in lambda functions
-	photos = assistant.photos;
-	prevTime = 0;
 	viewer = $('ImageId');
+	assistant = this; //for use in lambda functions
+
+	function showPhotos(urlBaseLeft, urlBaseCenter, urlBaseRight) {
+	    assistant.provideUrl(viewer.mojo.leftUrlProvided,   urlBaseLeft);
+	    assistant.provideUrl(viewer.mojo.centerUrlProvided, urlBaseCenter);
+	    assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlBaseRight);
+	}
+
+	assistant.photos = new Photos(assistant.status, assistant.showDialogBox, showPhotos);
+	console.log("&&& photos=" + assistant.photos);
+
+
+	console.log("=== photos=" + assistant.photos);
+	prevTime = 0;
 
 	function now() {
 	    var d = new Date();
@@ -139,17 +147,14 @@ FirstAssistant.prototype.activate = function (event) {
 		    latLon = 'lat=' + response.latitude + '&lon=' + response.longitude;
 
 		    /* throttle the calls to Flickr */
-		    if ((now() - prevTime) < 10000 /*Mojo.Controller.appInfo.periodMillisec*/) {
+		    if ((now() - prevTime) < 60000 /*Mojo.Controller.appInfo.periodMillisec*/) {
 			    return;  /* too soon */
 			}
 			prevTime = now();
 
 		    console.log(latLon);
-			photos.fetch(latLon, function (urlBaseLeft, urlBaseCenter, urlBaseRight) {
-				assistant.provideUrl(viewer.mojo.leftUrlProvided,   urlBaseLeft);
-				assistant.provideUrl(viewer.mojo.centerUrlProvided, urlBaseCenter);
-				assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlBaseRight);
-			});
+            console.log("*** photos=" + assistant.photos);
+			assistant.photos.fetch(latLon);
 		},
 	    onFailure: function (response) {
 		    assistant.showDialogBox("Problem calling Flickr", response);
