@@ -13,8 +13,11 @@ var Ajax, Mojo;   //framework
 var nrbyInitData; //model
 
 function Photos(status, alertUser, showPhotos) {
-    var self, index, array, placeName;
+    var self, index, array, placeName, searchArea, MAX_AREA, noNearbyPhotos;
     self = this;
+
+	MAX_AREA = 32000 * 32000;  //m^2
+    searchArea = MAX_AREA; //m^2
 
 	/* begin private members */
 
@@ -22,11 +25,38 @@ function Photos(status, alertUser, showPhotos) {
 	array = [];
 	placeName = "";
 
-	function setPhotos(response) {
-		var n, i;
-		n = response.photos.photo.length;
+	function radiusKm() {
+	    return Math.round(Math.sqrt(searchArea)) / 1000;
+	}
 
-		console.log("photo search returned " + n + " photos");
+	function radiusMsg() {
+	    var radius = Math.sqrt(searchArea);
+	    return radius > 2000 ? (Math.round(radius / 1000) + " km") : (Math.round(radius) + " meters");
+	}
+
+
+	function setPhotos(response) {
+	    var total, n, i;
+
+	    total = parseInt(response.photos.total, 10);
+		n = response.photos.photo.length;
+		console.log("displaying " + n + " of " + total + " photo");
+
+		noNearbyPhotos = (total === 0 && searchArea === MAX_AREA);
+		if (noNearbyPhotos) {
+			console.log("!!!! Cannot find any photos nearby");
+		} else if (total < 100 && searchArea !== MAX_AREA) {
+		    searchArea *= 2;
+			if (searchArea > MAX_AREA) {
+			    searchArea = MAX_AREA;
+			}
+			console.log(">>>>>> Increasing search radius to " + radiusMsg());
+		} else if (total > 200) {
+		    searchArea /= 2;
+			console.log("<<<<<< Reducing search radius to " + radiusMsg());
+		}
+
+
 
 		// Arrange photos ...,9,7,5,3,1,0,2,4,6,8,...
 		// so that most interesting are
@@ -34,17 +64,15 @@ function Photos(status, alertUser, showPhotos) {
 		for (i = 0; i < n; i += 1) {
 			if (i % 2 === 0) { //even
 				array[n / 2  +  i / 2] = response.photos.photo[i];
-				console.log(i + " --> " + (n / 2  +  i / 2));
 			} else { //odd
 				array[n / 2  -  (i + 1) / 2] = response.photos.photo[i];
-				console.log(i + " --> " + (n / 2  -  (i + 1) / 2));
 			}
 		}
-		if (index === -1 || index >= n) {
-		    index = n / 2;
-		}
+		//if (index === -1 || index >= n) {
+		index = n / 2;
+		//}
 		if (index >= 0 && array.length > 0) {
-			status.set('Fetching photo ' + array[index].title + '...');
+		    //status.set('Fetching photo ' + array[index].title + '...');
 			showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
 		}
 	}
@@ -56,6 +84,7 @@ function Photos(status, alertUser, showPhotos) {
 	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
 		'&api_key=' + Mojo.Controller.appInfo.flickrApiKey +
 		'&' + args + '&format=json&nojsoncallback=1';
+		console.log("FLICKR URL " + url);
 		status.set(message + '...');
 		req = new Ajax.Request(url, {
 		    method: 'get',
@@ -127,12 +156,23 @@ function Photos(status, alertUser, showPhotos) {
 	};
 
 	self.fetch = function (latLon) {
-		callFlickr(
-			'searching Flickr for nearby photos',
-			'photos.search',
-			latLon + '&radius=31&min_upload_date=0&extras=geo,date_taken,url_m,url_t&per_page=100',
-			setPhotos
-		);
+	    var radius;
+		if (noNearbyPhotos) {
+			callFlickr(
+				'No nearby photos.  Finding some elsewhere.',
+				'photos.search',
+				'&sort=interestingness-desc&user_id=35034364763@N01&extras=geo,date_taken,url_m,url_t&per_page=100',
+				setPhotos
+			);
+		} else {
+			radius = radiusKm();
+			callFlickr(
+				'searching Flickr for photos within ' + radiusMsg() + ' ',
+				'photos.search',
+				latLon + '&radius=' + radius + '&sort=interestingness-desc&min_upload_date=0&extras=geo,date_taken,url_m,url_t&per_page=100',
+				setPhotos
+			);
+		}
 	};
 
 	setPhotos(nrbyInitData);

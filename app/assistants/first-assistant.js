@@ -147,7 +147,7 @@ FirstAssistant.prototype.activate = function (event) {
 		    latLon = 'lat=' + response.latitude + '&lon=' + response.longitude;
 
 		    /* throttle the calls to Flickr */
-		    if ((now() - prevTime) < 60000 /*Mojo.Controller.appInfo.periodMillisec*/) {
+		    if ((now() - prevTime) < 10000 /*Mojo.Controller.appInfo.periodMillisec*/) {
 			    return;  /* too soon */
 			}
 			prevTime = now();
