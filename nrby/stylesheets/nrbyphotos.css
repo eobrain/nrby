@@ -1,4 +1,3 @@
 #ImageId    {height: 100%; position: absolute; top:0; }
 #nrbyStatus {font-size: small; overflow:hidden; position: absolute; top: 100px; display:none; }
-#nrbyInfo   {font-size: small; overflow:hidden; position: absolute; top: 0; }
-#nrbyInfo a {color:#44F; text-decoration:underline;}
+#nrbyInfo   {font-size: small; overflow:hidden; position: absolute; top: 0;}
