@@ -26,5 +26,3 @@ appinfo.json: appinfo-template.json
 	: EDIT appinfo.json FILE AND INSERT YOUR FLICKR API KEY
 	false
 
-app/models/initdata.js: Makefile
-	echo "nrbyInitData=`curl 'http://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=d4849471d84379df51b9ff14eed4a611&user_id=35034364763%40N01&sort=interestingness-desc&extras=geo,date_taken,url_m,url_t,owner_name&per_page=8&format=json&nojsoncallback=1'`;" >$@

@@ -68,6 +68,7 @@ FirstAssistant.prototype.setup = function () {
 	ctl.enableFullScreenMode(true);
 
 	this.provideUrl = function (provided, urls) {
+	    console.log("provdeUrl");
 	    provided(urls[1], urls[0]);
 	};
 
@@ -79,10 +80,12 @@ FirstAssistant.prototype.setup = function () {
 		onLeftFunction : function (event) {
 		    assistant.photos.moveLeft();
 		    assistant.provideUrl(viewer.mojo.leftUrlProvided, assistant.photos.urlsLeft());
+			assistant.photos.showInfo();
 	    }.bind(this),
 		onRightFunction : function (event) {
 		    assistant.photos.moveRight();
 		    assistant.provideUrl(viewer.mojo.rightUrlProvided, assistant.photos.urlsRight());
+			assistant.photos.showInfo();
 	    }.bind(this)
 	};
 
@@ -108,20 +111,37 @@ FirstAssistant.prototype.setup = function () {
 
 
 FirstAssistant.prototype.activate = function (event) {
-    var assistant, prevTime, viewer;
+    var assistant, prevTime, viewer, info;
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 
+	console.log("activate(..)");
 	viewer = $('ImageId');
 	assistant = this; //for use in lambda functions
 
+	info = {
+	    element: $('nrbyInfoLink'),
+		set: function (message, url) {
+		    console.log("info.set(" + message + "," + url + ")");
+	        this.element.update(message);
+			this.element.setAttribute('href', url);
+	        //this.element.style.display = 'block';
+	    },
+	    reset: function () {
+	        this.element.update('-------');
+	        //this.element.style.display = 'none';	  
+	    }
+	};
+
 	function showPhotos(urlsLeft, urlsCenter, urlsRight) {
+	    console.log("showPhotos(...)");
 	    assistant.provideUrl(viewer.mojo.leftUrlProvided,   urlsLeft);
-	    assistant.provideUrl(viewer.mojo.centerUrlProvided, urlsCenter);
-	    assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlsRight);
+		assistant.provideUrl(viewer.mojo.centerUrlProvided, urlsCenter);
+		assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlsRight);
 	}
 
-	assistant.photos = new Photos(assistant.status, assistant.showDialogBox, showPhotos);
+	console.log("&&& about to create Photos object ...");
+	assistant.photos = new Photos(assistant.status, info, assistant.showDialogBox, showPhotos);
 	console.log("&&& photos=" + assistant.photos);
 
 
@@ -147,7 +167,7 @@ FirstAssistant.prototype.activate = function (event) {
 		    latLon = 'lat=' + response.latitude + '&lon=' + response.longitude;
 
 		    /* throttle the calls to Flickr */
-		    if ((now() - prevTime) < 10000 /*Mojo.Controller.appInfo.periodMillisec*/) {
+		    if ((now() - prevTime) < 60000 /*Mojo.Controller.appInfo.periodMillisec*/) {
 			    return;  /* too soon */
 			}
 			prevTime = now();

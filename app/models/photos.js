@@ -12,9 +12,16 @@
 var Ajax, Mojo;   //framework
 var nrbyInitData; //model
 
-function Photos(status, alertUser, showPhotos) {
+
+function Photos(status, info, alertUser, showPhotos) {
+    Mojo.requireProperty(status, ['set', 'reset']);
+    Mojo.requireProperty(info, 'set');
+	Mojo.requireFunction(alertUser);
+	Mojo.requireFunction(showPhotos);
+
     var self, index, array, placeName, searchArea, MAX_AREA, noNearbyPhotos;
     self = this;
+
 
 	MAX_AREA = 32000 * 32000;  //m^2
     searchArea = MAX_AREA; //m^2
@@ -72,11 +79,14 @@ function Photos(status, alertUser, showPhotos) {
 		index = n / 2;
 		//}
 		if (index >= 0 && array.length > 0) {
-		    //status.set('Fetching photo ' + array[index].title + '...');
+		    console.log('Fetching photo ' + array[index].title + ' ...');
 			showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
+			console.log("about to showInfo");
+			self.showInfo();
 		}
 	}
 
+	
 
     function callFlickr(message, method, args, callback) {
 	    var url, req;
@@ -114,6 +124,14 @@ function Photos(status, alertUser, showPhotos) {
 
 	/* begin public members that can access private members */
 
+	self.showInfo = function () {
+	    var photo, title;
+	    photo = array[index];
+		title = photo.title.trim() === "" ? "(see on Flickr)" : photo.title;
+		console.log("showInfo()");
+		info.set(title, "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/");
+	};
+
 	self.hasPhotos = function () {
 	    return index >= 0 && array.length > 0;
 	};
@@ -131,13 +149,17 @@ function Photos(status, alertUser, showPhotos) {
 	};
 
 	self.rightIndex = function () {
+	    console.log("rightIndex()");
 	    return (index + 1) % array.length;
 	};
 
 	function urls(i) {
-	    var photo = array[i];
-		console.log("i=" + i + ",photo=" + photo);
-	    return [photo.url_t, photo.url_m];
+	    var photo, result;
+        photo = array[i];
+		console.log("i=" + i + ",photo=" + photo.title);
+	    result = [photo.url_t, photo.url_m];
+		console.log("urls(" + i + ") returns " + result);
+		return result;
 	}
 
 	self.urlsLeft = function () {
@@ -169,11 +191,12 @@ function Photos(status, alertUser, showPhotos) {
 			callFlickr(
 				'searching Flickr for photos within ' + radiusMsg() + ' ',
 				'photos.search',
-				latLon + '&radius=' + radius + '&sort=interestingness-desc&min_upload_date=0&extras=geo,date_taken,url_m,url_t&per_page=100',
+				latLon + '&radius=' + radius + '&extras=sort=interestingness-desc&min_upload_date=0&extras=geo,date_taken,url_m,url_t&per_page=100',
 				setPhotos
 			);
 		}
 	};
 
+	console.log("2: about to setPhotos");
 	setPhotos(nrbyInitData);
 }
