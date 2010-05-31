@@ -1,2 +1,4 @@
 nrby/app/models/*.linted
 nrby/app/assistants/*.linted
+apidoc
+*.ipk

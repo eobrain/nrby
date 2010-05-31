@@ -35,11 +35,13 @@ lint: $(LINTED)
 	touch $@
 
 doc:
-	$(JSDOC) $(JS)
-#	perl JSDoc-1.10.2/jsdoc.pl $(JS)
+	$(JSDOC) -d=apidoc -r nrby/app/models nrby/app/assistants
 
 nrby/appinfo.json: appinfo-template.json
 	cp appinfo-template.json $@
 	: EDIT $@ FILE AND INSERT YOUR FLICKR API KEY
 	false
+
+clean:
+	rm -r apidoc
 

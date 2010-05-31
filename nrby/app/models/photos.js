@@ -13,9 +13,11 @@ var Ajax, Mojo;   //framework
 var nrbyInitData; //model
 
 
-/** A list of photos returned by a Flickr search, with a pointer to a
-	current photo that can be moved left or right 
-	@constructor */
+/**
+   Initialize everything and display default built-in photos while waiting for the network.
+   @class A list of photos returned by a Flickr search, with a pointer to
+   a current photo that can be moved left or right
+  */
 function Photos(status, info, alertUser, showPhotos) {
     Mojo.requireProperty(status, ['set', 'reset']);
     Mojo.requireProperty(info, 'set');
@@ -154,7 +156,7 @@ function Photos(status, info, alertUser, showPhotos) {
 	this.showInfo = function () {
 	    var photo, title;
 	    photo = array[index];
-		title = photo.title.trim() === "" ? "(see on Flickr)" : photo.title;
+		title = photo.title === "" ? "(see on Flickr)" : photo.title;
 		console.log("showInfo()");
 		info.set(title, "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/");
 	};

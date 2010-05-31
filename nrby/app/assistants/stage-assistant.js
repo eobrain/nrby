@@ -7,9 +7,8 @@
  * which is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
-/** @constructor */
+/** @class The only stage in this app (containing a single scene). */
 function StageAssistant() {
-	/* this is the creator function for your stage assistant object */
 }
 
 /** push the first scene and allow app to respond to window orientation events */

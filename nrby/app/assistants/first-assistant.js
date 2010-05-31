@@ -13,8 +13,7 @@
 var Mojo, $, window; //framework
 var Photos;                //models
 
-/** The controller for the one and only scene in this app.
-	@constructor */
+/** @class The controller for the one and only scene in this app. */
 function FirstAssistant() {
 }
 
