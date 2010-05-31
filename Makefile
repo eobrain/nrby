@@ -9,6 +9,7 @@ JSLINT=java -classpath build/js.jar org.mozilla.javascript.tools.shell.Main buil
 JSDOC=java -jar jsdoc-toolkit/jsrun.jar jsdoc-toolkit/app/run.js -t=jsdoc-toolkit/templates/jsdoc
 LINTED=\
  nrby/app/models/photos.linted\
+ nrby/app/models/latlon.linted\
  nrby/app/assistants/first-assistant.linted\
  nrby/app/assistants/stage-assistant.linted\
  test/spec/suite.linted
