@@ -13,6 +13,9 @@ var Ajax, Mojo;   //framework
 var nrbyInitData; //model
 
 
+/** A list of photos returned by a Flickr search, with a pointer to a
+	current photo that can be moved left or right 
+	@constructor */
 function Photos(status, info, alertUser, showPhotos) {
     Mojo.requireProperty(status, ['set', 'reset']);
     Mojo.requireProperty(info, 'set');
@@ -122,36 +125,18 @@ function Photos(status, info, alertUser, showPhotos) {
 		});
 	}
 
-	/* begin public members that can access private members */
-
-	self.showInfo = function () {
-	    var photo, title;
-	    photo = array[index];
-		title = photo.title.trim() === "" ? "(see on Flickr)" : photo.title;
-		console.log("showInfo()");
-		info.set(title, "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/");
-	};
-
-	self.hasPhotos = function () {
+	function hasPhotos() {
 	    return index >= 0 && array.length > 0;
-	};
+	}
 
-	self.moveLeft = function () {
-	    index = self.leftIndex();
-	};
-
-	self.moveRight = function () {
-	    index = self.rightIndex();
-	};
-
-	self.leftIndex = function () {
+	function leftIndex() {
 	    return (index - 1 + array.length) % array.length;
-	};
+	}
 
-	self.rightIndex = function () {
+	function rightIndex() {
 	    console.log("rightIndex()");
 	    return (index + 1) % array.length;
-	};
+	}
 
 	function urls(i) {
 	    var photo, result;
@@ -162,22 +147,58 @@ function Photos(status, info, alertUser, showPhotos) {
 		return result;
 	}
 
-	self.urlsLeft = function () {
-	    console.log("urlsLeft()");
-	    return urls(self.leftIndex());
+	/* begin public members that can access private members */
+
+	/** Display title on URL on the info object.
+	 @type void */
+	this.showInfo = function () {
+	    var photo, title;
+	    photo = array[index];
+		title = photo.title.trim() === "" ? "(see on Flickr)" : photo.title;
+		console.log("showInfo()");
+		info.set(title, "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/");
 	};
 
-	self.urlsCenter = function () {
+	/** Move current photo one to the left (wrapping around at the end) 
+		@type void
+	 */
+	this.moveLeft = function () {
+	    index = leftIndex();
+	};
+
+	/** Move current photo one to the right (wrapping around at the end)
+	 @type void*/
+	this.moveRight = function () {
+	    index = rightIndex();
+	};
+
+	/** Return an array of two URLs for the photo to the left of
+	 current photo, to a thumbnail and a medium size image
+	 @type String[2] */
+	this.urlsLeft = function () {
+	    console.log("urlsLeft()");
+	    return urls(leftIndex());
+	};
+
+	/** Return an array of two URLs for the current photo, to a thumbnail and a medium size image 
+		@type String[2]
+	 */
+	this.urlsCenter = function () {
 	    console.log("urlsCenter()");
 		return urls(index);
 	};
 
-	self.urlsRight = function () {
+	/** Return an array of two URLs for the photo to the right of the
+		current photo, to a thumbnail and a medium size image 
+		@type String[2] */
+	this.urlsRight = function () {
 	    console.log("urlsRignt()");
-		return urls(self.rightIndex());
+		return urls(rightIndex());
 	};
 
-	self.fetch = function (latLon) {
+	/** fetch new photos by doing a Flickr search
+	 @type void */
+	this.fetch = function (latLon) {
 	    var radius;
 		if (noNearbyPhotos) {
 			callFlickr(
