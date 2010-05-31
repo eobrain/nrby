@@ -18,11 +18,12 @@ var nrbyInitData; //model
    @class A list of photos returned by a Flickr search, with a pointer to
    a current photo that can be moved left or right
   */
-function Photos(status, info, alertUser, showPhotos) {
+function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
     Mojo.requireProperty(status, ['set', 'reset']);
     Mojo.requireProperty(info, 'set');
 	Mojo.requireFunction(alertUser);
 	Mojo.requireFunction(showPhotos);
+	Mojo.requireFunction(callAfterAcknowledgement);
 
     var self, index, array, placeName, searchArea, MAX_AREA, noNearbyPhotos;
     self = this;
@@ -37,6 +38,12 @@ function Photos(status, info, alertUser, showPhotos) {
 	array = [];
 	placeName = "";
 
+	/** The previous response from Flickr. */
+	this.flickrResponse = {photos: {photo: []}};
+
+	/** New photos are waiting to be exposed */
+	this.photosAreWaiting = false;
+
 	function radiusKm() {
 	    return Math.round(Math.sqrt(searchArea)) / 1000;
 	}
@@ -46,9 +53,46 @@ function Photos(status, info, alertUser, showPhotos) {
 	    return radius > 2000 ? (Math.round(radius / 1000) + " km") : (Math.round(radius) + " meters");
 	}
 
+	function isEqual(a, b) {
+	    var i, n;
+	    n = a.length;
+	    if (b.length !== n) {
+		    return false;
+		}
+		for (i = 0; i < n; i += 1) {
+		    if (a[i].id !== b[i].id) {
+			    return false;
+			}
+		}
+		return true;
+	}
+
+	/** Expose photos received from Flickr.  Arrange photos
+		...,9,7,5,3,1,0,2,4,6,8,...  so that most interesting are
+		closest to center */
+	function exposePhotos() {
+	    var i, n;
+		n = self.flickrResponse.photos.photo.length;
+		for (i = 0; i < n; i += 1) {
+			if (i % 2 === 0) { //even
+				array[n / 2  +  i / 2] = self.flickrResponse.photos.photo[i];
+			} else { //odd
+				array[n / 2  -  (i + 1) / 2] = self.flickrResponse.photos.photo[i];
+			}
+		}
+		//if (index === -1 || index >= n) {
+		index = n / 2;
+		//}
+		if (index >= 0 && array.length > 0) {
+		    console.log('Fetching photo ' + array[index].title + ' ...');
+			showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
+			console.log("about to showInfo");
+			self.showInfo();
+		}
+	}
 
 	function setPhotos(response) {
-	    var total, n, i;
+	    var total, n;
 
 	    total = parseInt(response.photos.total, 10);
 		n = response.photos.photo.length;
@@ -69,29 +113,13 @@ function Photos(status, info, alertUser, showPhotos) {
 		}
 
 
+		self.photosAreWaiting = !isEqual(response.photos.photo, self.flickrResponse.photos.photo);
 
-		// Arrange photos ...,9,7,5,3,1,0,2,4,6,8,...
-		// so that most interesting are
-		// closest to center
-		for (i = 0; i < n; i += 1) {
-			if (i % 2 === 0) { //even
-				array[n / 2  +  i / 2] = response.photos.photo[i];
-			} else { //odd
-				array[n / 2  -  (i + 1) / 2] = response.photos.photo[i];
-			}
-		}
-		//if (index === -1 || index >= n) {
-		index = n / 2;
-		//}
-		if (index >= 0 && array.length > 0) {
-		    console.log('Fetching photo ' + array[index].title + ' ...');
-			showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
-			console.log("about to showInfo");
-			self.showInfo();
+		if (self.photosAreWaiting) {
+		    self.flickrResponse = response;
+			callAfterAcknowledgement("New photos are available", exposePhotos);
 		}
 	}
-
-	
 
     function callFlickr(message, method, args, callback) {
 	    var url, req;

@@ -42,7 +42,7 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 
 /** Setup the ImageViewer widget and various callback functions to be sent to the model. */
 FirstAssistant.prototype.setup = function () {
-    var assistant, viewerModel, viewer, appCtl, ctl;
+    var assistant, viewerModel, buttonModel, viewer, appCtl, ctl;
 
 	viewer = $('ImageId');
 
@@ -83,8 +83,13 @@ FirstAssistant.prototype.setup = function () {
 	    }.bind(this)
 	};
 
+    buttonModel = {
+	    label : "New Photos",
+	    disabled: false
+	};
 
 	this.controller.setupWidget('ImageId', {}, viewerModel);
+	this.controller.setupWidget("continueButton", {}, buttonModel);
 
     appCtl = Mojo.Controller.getAppController();
 
@@ -130,6 +135,11 @@ FirstAssistant.prototype.activate = function (event) {
 		assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlsRight);
 	}
 
+	function callAfterAcknowledgement(message, callback) {
+	    console.log(message);
+		callback();
+	}
+
 	// This function will popup a dialog, displaying the message passed in.
 	function showDialogBox(title, message) {
 		console.log('\n' + 
@@ -150,7 +160,7 @@ FirstAssistant.prototype.activate = function (event) {
 
 	/** The main model for the app.
 	 @type Photos */
-	this.photos = new Photos(this.status, info, showDialogBox, showPhotos);
+	this.photos = new Photos(this.status, info, showDialogBox, showPhotos, callAfterAcknowledgement);
 
 	console.log("&&& photos=" + this.photos);
 
