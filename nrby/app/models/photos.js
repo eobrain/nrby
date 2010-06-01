@@ -100,9 +100,13 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 				array[n / 2  -  (i + 1) / 2] = self.flickrResponse.photos.photo[i];
 			}
 		}
-		//if (index === -1 || index >= n) {
-		index = n / 2;
-		//}
+		if (n === 0) {
+		  //do nothing
+		} else if ((n % 2) === 0) {
+		    index = n / 2;
+		} else {
+		    index = (n - 1) / 2;
+		}
 		if (index >= 0 && array.length > 0) {
 		    console.log('Fetching photo ' + array[index].title + ' ...');
 			showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());

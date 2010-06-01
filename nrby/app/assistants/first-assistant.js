@@ -19,27 +19,29 @@ function FirstAssistant() {
 
 /** Handle the event of the user rotating the device, resizing the image viewer accordingly. */
 FirstAssistant.prototype.orientationChanged = function (orientation) {
-    var viewer;
+    var size, viewer, button;
     // you will be passed "left", "right", "up", or "down" (and maybe others?)
     console.log("orientationChanged(" + orientation + ")");
-	viewer = $('ImageId');
 	switch (orientation) {
 	case "up":   //normal portrait
 	case "down": //reverse portrait
-		viewer.mojo.manualSize(Mojo.Environment.DeviceInfo.screenWidth, 
-							   Mojo.Environment.DeviceInfo.screenHeight);
-		$('continueButton').style.top = (Mojo.Environment.DeviceInfo.screenHeight - 60) + "px";
+	    size = [Mojo.Environment.DeviceInfo.screenWidth, Mojo.Environment.DeviceInfo.screenHeight];
 		break;
 	case "left":  //left side down
 	case "right": //right side down
-		viewer.mojo.manualSize(Mojo.Environment.DeviceInfo.screenHeight, 
-							 Mojo.Environment.DeviceInfo.screenWidth);
-		$('continueButton').style.top = (Mojo.Environment.DeviceInfo.screenWidth - 60) + "px";
+		size = [Mojo.Environment.DeviceInfo.screenHeight, Mojo.Environment.DeviceInfo.screenWidth];
 		break;
 	default:
 		//do nothing
-		break;
+		return;
 	}
+
+	//Make viewer fill the screen
+	$('ImageId').mojo.manualSize(size[0], size[1]);
+
+	//Move status and button to bottom
+	$('nrbyStatus').style.top     = (size[1] - 60) + "px";
+	$('continueButton').style.top = (size[1] - 60) + "px";
 };
 
 /** Setup the ImageViewer widget and various callback functions to be sent to the model. */
@@ -150,16 +152,16 @@ FirstAssistant.prototype.activate = function (event) {
 	}
 
 	// This function will popup a dialog, displaying the message passed in.
-	function showDialogBox(title, message) {
-		console.log('\n' + 
-					'********************\n' +
-					'* ' + title + '\n' +
-					'********************\n' + 
-					'* ' + message + '\n' +
-					'********************\n');
+	function showDialogBox(titleStr, message) {
+		console.log("\n" + 
+					"********************\n" +
+					"* " + titleStr + "\n" +
+					"********************\n" + 
+					"* " + message + "\n" +
+					"********************\n");
 		this.controller.showAlertDialog({
 			onChoose: function (value) {},
-			title: title,
+			title: titleStr,
 			message: message,
 			choices: [ {label: 'OK', value: 'OK', type: 'color'} ]
 		});
@@ -196,7 +198,7 @@ FirstAssistant.prototype.activate = function (event) {
 		    latLon = new LatLon(response.latitude, response.longitude);
 
 		    /* throttle the calls to Flickr */
-		    if ((now() - prevTime) < 60000 /*Mojo.Controller.appInfo.periodMillisec*/) {
+		    if ((now() - prevTime) < 10000 /*Mojo.Controller.appInfo.periodMillisec*/) {
 			    return;  /* too soon */
 			}
 			prevTime = now();
