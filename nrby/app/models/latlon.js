@@ -51,6 +51,11 @@ function LatLon(latDeg, lonDeg) {
 		return this.DIRECTIONS[index % 8];
     };
 
+	/** @return the position as a string suitable for passing as HTTP query parameters */
+	this.query = function () {
+	    return "lat=" + latDeg + "&lon=" + lonDeg;
+	};
+
 }
 
 LatLon.prototype.RADIANS_PER_DEGREE = Math.PI / 180;

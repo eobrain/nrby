@@ -160,4 +160,9 @@ describe('LatLon', function () {
 		expect(p(0, 0).directionTo(p(1,  -1))).toEqual('NW');
 	});
 
+	it('can generate query parameters', function () {
+		var sanFrancisco = new LatLon(37.774930, -122.419416);
+		expect(sanFrancisco.query()).toEqual('lat=37.77493&lon=-122.419416');
+	});
+
 });

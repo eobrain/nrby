@@ -11,7 +11,7 @@
 
 /* declare globals to keep JSLint happy */
 var Mojo, $, window; //framework
-var Photos;                //models
+var Photos, LatLon;  //models
 
 /** @class The controller for the one and only scene in this app. */
 function FirstAssistant() {
@@ -193,15 +193,14 @@ FirstAssistant.prototype.activate = function (event) {
 			    console.log("FLICKR RETURNED ZEROS FOR LAT/LON " + response);
 				return;
 			}
-		    latLon = 'lat=' + response.latitude + '&lon=' + response.longitude;
+		    latLon = new LatLon(response.latitude, response.longitude);
 
 		    /* throttle the calls to Flickr */
-		    if ((now() - prevTime) < 10000 /*Mojo.Controller.appInfo.periodMillisec*/) {
+		    if ((now() - prevTime) < 60000 /*Mojo.Controller.appInfo.periodMillisec*/) {
 			    return;  /* too soon */
 			}
 			prevTime = now();
 
-		    console.log(latLon);
             console.log("*** photos=" + assistant.photos);
 			assistant.photos.fetch(latLon);
 		},
