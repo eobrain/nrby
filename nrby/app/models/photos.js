@@ -10,7 +10,7 @@
 /*jslint devel: true */
 /* declare globals to keep JSLint happy */
 var Ajax, Mojo;   //framework
-var nrbyInitData; //model
+var nrbyInitData, LatLon; //model
 
 
 /**
@@ -25,19 +25,21 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	Mojo.requireFunction(showPhotos);
 	Mojo.requireFunction(callAfterAcknowledgement);
 
-    var self, index, array, placeName, searchArea, MAX_AREA, noNearbyPhotos, areaChange, prevLatLon;
+    var self, index, array, placeName, searchArea, MAX_AREA, noNearbyPhotos, areaChange, currentLatLon, prevLatLon;
     self = this;
+
+	/* begin private members */
 
 	areaChange = 5;
 	MAX_AREA = 32000 * 32000;  //m^2
     searchArea = MAX_AREA; //m^2
 
-	/* begin private members */
 
     index = -1;
 	array = [];
 	placeName = "";
 	prevLatLon = null;
+	currentLatLon = null;
 
 	/** The previous response from Flickr. */
 	this.flickrResponse = null;
@@ -49,9 +51,12 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	    return Math.round(Math.sqrt(searchArea)) / 1000;
 	}
 
+	function metersMsg(r) {
+	    return r > 2000 ? (Math.round(r / 1000) + " km") : (Math.round(r) + " meters");
+	}
+
 	function radiusMsg() {
-	    var radius = Math.sqrt(searchArea);
-	    return radius > 2000 ? (Math.round(radius / 1000) + " km") : (Math.round(radius) + " meters");
+	    return metersMsg(Math.sqrt(searchArea));
 	}
 
 	function isEqual(a, b) {
@@ -198,9 +203,14 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	/** Display title on URL on the info object.
 	 @type void */
 	this.showInfo = function () {
-	    var photo, title;
+	    var photo, title, photoLatLon;
 	    photo = array[index];
-		title = photo.title === "" ? "(see on Flickr)" : photo.title;
+	    photoLatLon = new LatLon(photo.latitude, photo.longitude);
+		title = "";
+		if (currentLatLon !== null) {
+		    title += metersMsg(currentLatLon.metersFrom(photoLatLon)) + " " + currentLatLon.directionTo(photoLatLon) + " ";
+		}
+		title += "\"" + photo.title + "\"";
 		console.log("showInfo()");
 		info.set(title, "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/");
 	};
@@ -246,6 +256,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	 @type void */
 	this.fetch = function (latLon) {
 	    var radius, distanceMoved;
+		currentLatLon = latLon;
 		if (prevLatLon === null) {
 		    distanceMoved = null;
 		} else {
