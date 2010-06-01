@@ -39,10 +39,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	placeName = "";
 
 	/** The previous response from Flickr. */
-	this.flickrResponse = {photos: {photo: []}};
-
-	/** New photos are waiting to be exposed */
-	this.photosAreWaiting = false;
+	this.flickrResponse = null;
 
 	function radiusKm() {
 	    return Math.round(Math.sqrt(searchArea)) / 1000;
@@ -113,9 +110,12 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		}
 
 
-		self.photosAreWaiting = !isEqual(response.photos.photo, self.flickrResponse.photos.photo);
-
-		if (self.photosAreWaiting) {
+		if (self.flickrResponse === null || self.flickrResponse.isInit === true) {
+		    //first time, or init data
+		    self.flickrResponse = response;
+			exposePhotos();
+		} else if (!isEqual(response.photos.photo, self.flickrResponse.photos.photo)) {
+		    //photos have changes
 		    self.flickrResponse = response;
 			callAfterAcknowledgement("New photos are available", exposePhotos);
 		}

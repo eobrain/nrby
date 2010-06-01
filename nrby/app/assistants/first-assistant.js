@@ -28,11 +28,13 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 	case "down": //reverse portrait
 		viewer.mojo.manualSize(Mojo.Environment.DeviceInfo.screenWidth, 
 							   Mojo.Environment.DeviceInfo.screenHeight);
+		$('continueButton').style.top = (Mojo.Environment.DeviceInfo.screenHeight - 60) + "px";
 		break;
 	case "left":  //left side down
 	case "right": //right side down
 		viewer.mojo.manualSize(Mojo.Environment.DeviceInfo.screenHeight, 
 							 Mojo.Environment.DeviceInfo.screenWidth);
+		$('continueButton').style.top = (Mojo.Environment.DeviceInfo.screenWidth - 60) + "px";
 		break;
 	default:
 		//do nothing
@@ -84,7 +86,7 @@ FirstAssistant.prototype.setup = function () {
 	};
 
     buttonModel = {
-	    label : "New Photos",
+	    label : "Refresh",
 	    disabled: false
 	};
 
@@ -106,12 +108,13 @@ FirstAssistant.prototype.setup = function () {
 
 /** Create the Photos model object, and start listening for GPS location events. */
 FirstAssistant.prototype.activate = function (event) {
-    var assistant, prevTime, viewer, info;
+    var assistant, prevTime, viewer, info, button;
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 
 	console.log("activate(..)");
 	viewer = $('ImageId');
+    button = $('continueButton');
 	assistant = this; //for use in lambda functions
 
 	info = {
@@ -136,8 +139,14 @@ FirstAssistant.prototype.activate = function (event) {
 	}
 
 	function callAfterAcknowledgement(message, callback) {
+	    button.style.display = 'block';
+		Mojo.Event.listen(assistant.controller.get("continueButton"), Mojo.Event.tap, function (event) {
+			console.log("BUTTON PRESSED");
+			callback();
+			button.style.display = 'none';
+		}.bindAsEventListener(assistant));
+		//TODO: stop listening
 	    console.log(message);
-		callback();
 	}
 
 	// This function will popup a dialog, displaying the message passed in.
@@ -187,7 +196,7 @@ FirstAssistant.prototype.activate = function (event) {
 		    latLon = 'lat=' + response.latitude + '&lon=' + response.longitude;
 
 		    /* throttle the calls to Flickr */
-		    if ((now() - prevTime) < 60000 /*Mojo.Controller.appInfo.periodMillisec*/) {
+		    if ((now() - prevTime) < 10000 /*Mojo.Controller.appInfo.periodMillisec*/) {
 			    return;  /* too soon */
 			}
 			prevTime = now();
