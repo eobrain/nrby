@@ -23,7 +23,7 @@ run: install doc
 	palm-launch org.eamonn.nrby
 
 install: org.eamonn.nrby_$(VERSION)_all.ipk
-	palm-install -r org.eamonn.nrby
+	- palm-install -r org.eamonn.nrby
 	palm-install org.eamonn.nrby_$(VERSION)_all.ipk
 
 org.eamonn.nrby_$(VERSION)_all.ipk: lint nrby/appinfo.json nrby/* nrby/*/* nrby/*/*/* 
