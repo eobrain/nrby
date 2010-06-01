@@ -51,8 +51,22 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	    return Math.round(Math.sqrt(searchArea)) / 1000;
 	}
 
+
+	function twoSignificant(r) {
+	    var mult = 1;
+		while (r >= 100) {
+		    r /= 10;
+			mult *= 10;
+		}
+		return mult * Math.round(r);
+	}
+
 	function metersMsg(r) {
-	    return r > 2000 ? (Math.round(r / 1000) + " km") : (Math.round(r) + " meters");
+	    if (r < 1000) {
+		    return twoSignificant(r) + " meters";
+		} else {
+		    return twoSignificant(r / 1000) + " km";
+		}
 	}
 
 	function radiusMsg() {
