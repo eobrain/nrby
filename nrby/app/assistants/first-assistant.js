@@ -140,14 +140,28 @@ FirstAssistant.prototype.activate = function (event) {
 		assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlsRight);
 	}
 
+	this.stopListeningToButton = function () { /* do nothing*/ };
+
 	function callAfterAcknowledgement(message, callback) {
+	    var listener, continueButton;
 	    button.style.display = 'block';
-		Mojo.Event.listen(assistant.controller.get("continueButton"), Mojo.Event.tap, function (event) {
+
+		assistant.stopListeningToButton(); //clear any previous listeners
+
+		listener = function (event) {
 			console.log("BUTTON PRESSED");
 			callback();
 			button.style.display = 'none';
-		}.bindAsEventListener(assistant));
-		//TODO: stop listening
+		}.bindAsEventListener(assistant);	
+
+		continueButton = assistant.controller.get("continueButton");
+
+		Mojo.Event.listen(continueButton, Mojo.Event.tap, listener);
+		
+		assistant.stopListeningToButton = function () {
+		    Mojo.Event.stopListening(continueButton, Mojo.Event.tap, listener);
+		};
+
 	    console.log(message);
 	}
 
@@ -215,6 +229,7 @@ FirstAssistant.prototype.activate = function (event) {
 FirstAssistant.prototype.deactivate = function (event) {
 	/* remove any event handlers you added in activate and do any other cleanup that should happen before
 	   this scene is popped or another scene is pushed on top */
+    this.stopListeningToButton(); //clear any previous listeners
 };
 
 /** Stop listening to the ImageViewer widget */

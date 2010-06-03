@@ -46,3 +46,5 @@ nrby/appinfo.json: appinfo-template.json
 clean:
 	rm -r apidoc
 
+publish-doc: doc
+	scp -r apidoc nrby.eamonn.org:nrby.eamonn.org/apidoc
