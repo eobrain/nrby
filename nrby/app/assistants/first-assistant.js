@@ -21,7 +21,7 @@ function FirstAssistant() {
 FirstAssistant.prototype.orientationChanged = function (orientation) {
     var size, viewer, button;
     // you will be passed "left", "right", "up", or "down" (and maybe others?)
-    console.log("orientationChanged(" + orientation + ")");
+    //console.log("orientationChanged(" + orientation + ")");
 	switch (orientation) {
 	case "up":   //normal portrait
 	case "down": //reverse portrait
@@ -69,7 +69,6 @@ FirstAssistant.prototype.setup = function () {
 
 	/** pass the two URLs as arguments to the provided function */
 	this.provideUrl = function (provided, urls) {
-	    console.log("provdeUrl");
 	    provided(urls[1], urls[0]);
 	};
 
@@ -99,7 +98,7 @@ FirstAssistant.prototype.setup = function () {
 
 	/** callback function used to respond to new photo being displayed by ImageViewer */
     this.imageViewChanged = function (event) {
-	    console.log(" ====== imageViewChanged(" + event + ")");
+	    //console.log(" ====== imageViewChanged(" + event + ")");
 	    FirstAssistant.prototype.orientationChanged(appCtl.getScreenOrientation());
 		assistant.status.reset();
 	}.bindAsEventListener(this);
@@ -114,7 +113,6 @@ FirstAssistant.prototype.activate = function (event) {
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 
-	console.log("activate(..)");
 	viewer = $('ImageId');
     button = $('continueButton');
 	assistant = this; //for use in lambda functions
@@ -122,7 +120,6 @@ FirstAssistant.prototype.activate = function (event) {
 	info = {
 	    element: $('nrbyInfoLink'),
 		set: function (message, url) {
-		    console.log("info.set(" + message + "," + url + ")");
 	        this.element.update(message);
 			this.element.setAttribute('href', url);
 	        //this.element.style.display = 'block';
@@ -134,7 +131,6 @@ FirstAssistant.prototype.activate = function (event) {
 	};
 
 	function showPhotos(urlsLeft, urlsCenter, urlsRight) {
-	    console.log("showPhotos(...)");
 	    assistant.provideUrl(viewer.mojo.leftUrlProvided,   urlsLeft);
 		assistant.provideUrl(viewer.mojo.centerUrlProvided, urlsCenter);
 		assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlsRight);
@@ -181,16 +177,12 @@ FirstAssistant.prototype.activate = function (event) {
 		});
 	}
 
-	console.log("&&& about to create Photos object ...");
 
 	/** The main model for the app.
 	 @type Photos */
 	this.photos = new Photos(this.status, info, showDialogBox, showPhotos, callAfterAcknowledgement);
 
-	console.log("&&& photos=" + this.photos);
-
-
-	console.log("=== photos=" + this.photos);
+	//console.log("=== photos=" + this.photos);
 	prevTime = 0;
 
 	function now() {
@@ -217,7 +209,6 @@ FirstAssistant.prototype.activate = function (event) {
 			}
 			prevTime = now();
 
-            console.log("*** photos=" + assistant.photos);
 			assistant.photos.fetch(latLon);
 		},
 	    onFailure: function (response) {

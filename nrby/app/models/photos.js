@@ -25,14 +25,22 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	Mojo.requireFunction(showPhotos);
 	Mojo.requireFunction(callAfterAcknowledgement);
 
-    var self, index, array, placeName, searchArea, MAX_AREA, noNearbyPhotos, areaChange, currentLatLon, prevLatLon;
+	var MILE, FOOT, MAX_AREA, AREA_CHANGE_MIN, AREA_CHANGE_MAX,
+	    self, index, array, placeName, searchArea, noNearbyPhotos, areaChange, nextFetchMessage,
+	    currentLatLon, prevLatLon;
     self = this;
 
 	/* begin private members */
 
-	areaChange = 5;
+	AREA_CHANGE_MIN = 1.2;
+	AREA_CHANGE_MAX = 10;
+	areaChange = AREA_CHANGE_MAX;
 	MAX_AREA = 32000 * 32000;  //m^2
+	MILE = 1609.344;
+    FOOT = 0.3048;
+
     searchArea = MAX_AREA; //m^2
+	nextFetchMessage = '---';
 
 
     index = -1;
@@ -62,10 +70,18 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	}
 
 	function metersMsg(r) {
-	    if (r < 1000) {
-		    return twoSignificant(r) + " meters";
+	    if (Mojo.Locale.getCurrentFormatRegion() === 'us') {
+			if (r < 500 * FOOT) {
+				return twoSignificant(r / FOOT) + " ft";
+			} else {
+			    return (twoSignificant(10 * r / MILE) / 10) + " mi";
+			}		
 		} else {
-		    return twoSignificant(r / 1000) + " km";
+			if (r < 400) {
+				return twoSignificant(r) + " m";
+			} else {
+			    return (twoSignificant(r / 100) / 10) + " km";
+			}
 		}
 	}
 
@@ -108,27 +124,22 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		    index = (n - 1) / 2;
 		}
 		if (index >= 0 && array.length > 0) {
-		    console.log('Fetching photo ' + array[index].title + ' ...');
+		    //console.log('Fetching photo ' + array[index].title + ' ...');
 			showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
-			console.log("about to showInfo");
 			self.showInfo();
 		}
 	}
 
 	function changeSearchArea(increase) {
 	    if (increase) {
-		    searchArea *= areaChange;
+			searchArea *= areaChange;
 			if (searchArea > MAX_AREA) {
-			    searchArea = MAX_AREA;
+				searchArea = MAX_AREA;
 			}
 			console.log("Increasing search radius by " + areaChange + " to " + radiusMsg());
 		} else {
 		    searchArea /= areaChange;
 			console.log("Reducing search radius by " + areaChange + " to " + radiusMsg());
-		}
-		areaChange = 1 + (areaChange - 1) * 0.9;
-		if (areaChange < 1.2) {
-		    areaChange = 1.2;
 		}
 	}
 
@@ -143,12 +154,24 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		self.goodNumberOfPhotos = false;
 		if (noNearbyPhotos) {
 			console.log("!!!! Cannot find any photos nearby");
+			areaChange = AREA_CHANGE_MAX;
 		} else if (total < 100 && searchArea !== MAX_AREA) {
 		    changeSearchArea(true);
-		} else if (total > 200) {
+			areaChange = 1 + (areaChange - 1) * 0.9;
+			nextFetchMessage = 'Widening search to find more photos';
+		} else if (total > 500) {
 		    changeSearchArea(false);
+			areaChange = 1 + (areaChange - 1) * 0.9;
+			nextFetchMessage = 'Narrowing search to find closer photos';
 		} else {
 		    self.goodNumberOfPhotos = true;
+			areaChange = AREA_CHANGE_MAX;
+		}
+		if (areaChange < AREA_CHANGE_MIN) {
+		    areaChange = AREA_CHANGE_MIN;
+		}
+		if (searchArea === MAX_AREA) {
+		    areaChange = AREA_CHANGE_MAX;
 		}
 
 		if (self.flickrResponse === null || self.flickrResponse.isInit === true) {
@@ -164,11 +187,11 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 
     function callFlickr(message, method, args, callback) {
 	    var url, req;
-		console.log(message + " CALLING FLICKR " + method + "(" + args + ")");
+		//console.log(message + " CALLING FLICKR " + method + "(" + args + ")");
 	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
 		'&api_key=' + Mojo.Controller.appInfo.flickrApiKey +
 		'&' + args + '&format=json&nojsoncallback=1';
-		console.log("FLICKR URL " + url);
+		//console.log("FLICKR URL " + url);
 		status.set(message + '...');
 		req = new Ajax.Request(url, {
 		    method: 'get',
@@ -203,16 +226,15 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	}
 
 	function rightIndex() {
-	    console.log("rightIndex()");
 	    return (index + 1) % array.length;
 	}
 
 	function urls(i) {
 	    var photo, result;
         photo = array[i];
-		console.log("i=" + i + ",photo=" + photo.title);
+		//console.log("i=" + i + ",photo=" + photo.title);
 	    result = [photo.url_t, photo.url_m];
-		console.log("urls(" + i + ") returns " + result);
+		//console.log("urls(" + i + ") returns " + result);
 		return result;
 	}
 
@@ -229,7 +251,6 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		    title += metersMsg(currentLatLon.metersFrom(photoLatLon)) + " " + currentLatLon.directionTo(photoLatLon) + " ";
 		}
 		title += "\"" + photo.title + "\"";
-		console.log("showInfo()");
 		info.set(title, "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/");
 	};
 
@@ -250,7 +271,6 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	 current photo, to a thumbnail and a medium size image
 	 @type String[2] */
 	this.urlsLeft = function () {
-	    console.log("urlsLeft()");
 	    return urls(leftIndex());
 	};
 
@@ -258,7 +278,6 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		@type String[2]
 	 */
 	this.urlsCenter = function () {
-	    console.log("urlsCenter()");
 		return urls(index);
 	};
 
@@ -266,22 +285,29 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		current photo, to a thumbnail and a medium size image 
 		@type String[2] */
 	this.urlsRight = function () {
-	    console.log("urlsRignt()");
 		return urls(rightIndex());
 	};
 
 	/** fetch new photos by doing a Flickr search
 	 @type void */
 	this.fetch = function (latLon) {
-	    var radius, distanceMoved;
+	    var radius, distanceMoved, movedMessage;
 		currentLatLon = latLon;
 		if (prevLatLon === null) {
 		    distanceMoved = null;
+			movedMessage = 'Searching for nearby photos';
 		} else {
 		    distanceMoved = latLon.metersFrom(prevLatLon);
 			console.log("Moved " + distanceMoved + " meters " + prevLatLon.directionTo(latLon));
+			if (distanceMoved > Math.sqrt(searchArea) / 10) {
+			    movedMessage = 'Searching again because you have moved ' + 
+				                metersMsg(distanceMoved) + ' ' + prevLatLon.directionTo(latLon);
+			} else {
+			    movedMessage = null;
+			}
+			
 		}
-		if (self.goodNumberOfPhotos && distanceMoved !== null && distanceMoved < Math.sqrt(searchArea) / 10) {
+		if (self.goodNumberOfPhotos && movedMessage === null) {
 		    console.log("no need to fetch more photos");
 		    return;
 		} else if (noNearbyPhotos) {
@@ -294,7 +320,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		} else {
 			radius = radiusKm();
 			callFlickr(
-				'searching Flickr for photos within ' + radiusMsg() + ' ',
+				movedMessage === null ? nextFetchMessage : movedMessage,
 				'photos.search',
 				latLon.query() + '&radius=' + radius + '&extras=sort=interestingness-desc&min_upload_date=0&extras=geo,date_taken,url_m,url_t&per_page=100',
 				setPhotos
@@ -303,6 +329,5 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		prevLatLon = latLon;
 	};
 
-	console.log("2: about to setPhotos");
 	setPhotos(nrbyInitData);
 }
