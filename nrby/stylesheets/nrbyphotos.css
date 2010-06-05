@@ -1,4 +1,4 @@
 #ImageId    {height: 100%; position: absolute; top:0; }
 #nrbyStatus {font-size: small; overflow:hidden; position: absolute; top: 100px; display:none; }
 #nrbyInfo   {font-size: small; overflow:hidden; position: absolute; top: 0;}
-#continueButton {position:absolute; right:0; z-index:99999;display:none;}
+#continueButton {position:absolute; right:0; z-index:99999;display:none;opacity:0.5;}
