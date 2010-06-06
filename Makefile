@@ -4,7 +4,7 @@
 # which is available at http://www.eclipse.org/legal/epl-v10.html
 
 .SUFFIXES: .js .linted
-VERSION=0.4.0
+VERSION=0.5.0
 JSLINT=java -classpath build/js.jar org.mozilla.javascript.tools.shell.Main build/jslint.js
 JSDOC=java -jar jsdoc-toolkit/jsrun.jar jsdoc-toolkit/app/run.js -t=jsdoc-toolkit/templates/jsdoc
 LINTED=\
