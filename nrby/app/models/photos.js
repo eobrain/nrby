@@ -25,22 +25,20 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	Mojo.requireFunction(showPhotos);
 	Mojo.requireFunction(callAfterAcknowledgement);
 
-	var MILE, FOOT, MAX_AREA, AREA_CHANGE_MIN, AREA_CHANGE_MAX,
-	    self, index, array, placeName, searchArea, noNearbyPhotos, areaChange, nextFetchMessage,
-	    currentLatLon, prevLatLon;
+	var MILE, FOOT, MAX_AREA, IDEAL_PHOTO_COUNT,
+	    self, index, array, placeName, searchArea, noNearbyPhotos, density,
+	  currentLatLon, prevLatLon, flickrResponse, goodNumberOfPhotos;
     self = this;
 
 	/* begin private members */
 
-	AREA_CHANGE_MIN = 1.2;
-	AREA_CHANGE_MAX = 10;
-	areaChange = AREA_CHANGE_MAX;
+	IDEAL_PHOTO_COUNT = 200;
 	MAX_AREA = 32000 * 32000;  //m^2
 	MILE = 1609.344;
     FOOT = 0.3048;
 
     searchArea = MAX_AREA; //m^2
-	nextFetchMessage = '---';
+	density = IDEAL_PHOTO_COUNT / MAX_AREA;
 
 
     index = -1;
@@ -49,11 +47,32 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	prevLatLon = null;
 	currentLatLon = null;
 
-	/** The previous response from Flickr. */
-	this.flickrResponse = null;
+	
+	flickrResponse = null;  // The previous response from Flickr.
 
-	/** Is there a satisfactory number of photos? */
-	this.goodNumberOfPhotos = false;
+	goodNumberOfPhotos = false; //Is there a satisfactory number of photos? */
+
+	function densityMsg(d) {
+	    return (1000000 * d) + " photos/km^2";
+	}
+
+	function updatePhotoDensity(photoCount) {
+	    var confidence, densityNew;
+		console.log("radius=" + Math.sqrt(searchArea) + ", photoCount=" + photoCount);
+		if (photoCount === 0) {
+		    density /= 10;
+			console.log("No photos, so let's greatly reduce the assumed density");
+		} else {
+			//more confident with more photos
+			confidence = photoCount / (photoCount + 10);
+			densityNew = photoCount / searchArea;
+
+			console.log("density was " + densityMsg(density) + ", now " + densityMsg(densityNew) +
+						" with a confidence of " + confidence);
+			density += confidence * (densityNew - density);
+		}
+		console.log("density now " + densityMsg(density));
+	}
 
 	function radiusKm() {
 	    return Math.round(Math.sqrt(searchArea)) / 1000;
@@ -106,40 +125,57 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	/** Expose photos received from Flickr.  Arrange photos
 		...,9,7,5,3,1,0,2,4,6,8,...  so that most interesting are
 		closest to center */
-	function exposePhotos() {
-	    var i, n;
-		n = self.flickrResponse.photos.photo.length;
+	function exposePhotos(photoArray) {
+	    var i, n, center;
+		n = photoArray.length;
+		console.log(n === 0 ? "no photos to expose" : "exposing " + photoArray[0].title);
+		if (n === 0) {
+		    return;
+		}
+		center = ((n % 2) === 0)  ?  n / 2  :  (n - 1) / 2;
 		for (i = 0; i < n; i += 1) {
 			if (i % 2 === 0) { //even
-				array[n / 2  +  i / 2] = self.flickrResponse.photos.photo[i];
+				array[center  +  i / 2] = photoArray[i];
 			} else { //odd
-				array[n / 2  -  (i + 1) / 2] = self.flickrResponse.photos.photo[i];
+				array[center  -  (i + 1) / 2] = photoArray[i];
 			}
 		}
-		if (n === 0) {
-		  //do nothing
-		} else if ((n % 2) === 0) {
-		    index = n / 2;
-		} else {
-		    index = (n - 1) / 2;
-		}
+		index = center;
 		if (index >= 0 && array.length > 0) {
-		    //console.log('Fetching photo ' + array[index].title + ' ...');
+		    console.log('Fetching photo ' + array[index].title + ' ...');
 			showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
 			self.showInfo();
 		}
 	}
 
-	function changeSearchArea(increase) {
-	    if (increase) {
-			searchArea *= areaChange;
-			if (searchArea > MAX_AREA) {
-				searchArea = MAX_AREA;
-			}
-			console.log("Increasing search radius by " + areaChange + " to " + radiusMsg());
+	function changeSearchArea(photoCount) {
+	    var idealSearchArea, newSearchArea, change;
+	    updatePhotoDensity(photoCount);
+		idealSearchArea = IDEAL_PHOTO_COUNT / density;
+		newSearchArea = Math.sqrt(idealSearchArea * searchArea);
+		if (newSearchArea > MAX_AREA) {
+		    console.log("search radius " + Math.sqrt(newSearchArea) + " exceeds max " + Math.sqrt(MAX_AREA));
+		    newSearchArea = MAX_AREA;
+		}
+
+		//wheather search area has not significantly changed
+		
+		change =  Math.abs(newSearchArea - searchArea) / (newSearchArea + searchArea);
+
+		console.log("Changing search radius " + Math.sqrt(searchArea) + " --> " +  
+					Math.sqrt(newSearchArea) + " CHANGE=" + change);
+		goodNumberOfPhotos = change < 0.2;
+		if (goodNumberOfPhotos) {
+		    console.log("Not changing search area because it has not changed much");
 		} else {
-		    searchArea /= areaChange;
-			console.log("Reducing search radius by " + areaChange + " to " + radiusMsg());
+		    if (newSearchArea > searchArea) {
+			    console.log("Increasing radius from " + Math.sqrt(searchArea) + 
+							" to " + Math.sqrt(newSearchArea));
+			} else {
+			    console.log("Reducing radius from " + Math.sqrt(searchArea) + 
+							" to " + Math.sqrt(newSearchArea));
+			}
+			searchArea = newSearchArea;
 		}
 	}
 
@@ -148,40 +184,30 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 
 	    total = parseInt(response.photos.total, 10);
 		n = response.photos.photo.length;
-		console.log("displaying " + n + " of " + total + " photo");
+		console.log("Flickr returned " + n + " of " + total + " photo");
+		if (n > 0) {
+		    console.log("first photo is " + response.photos.photo[0].title);
+		}
 
 		noNearbyPhotos = (total === 0 && searchArea === MAX_AREA);
-		self.goodNumberOfPhotos = false;
-		if (noNearbyPhotos) {
-			console.log("!!!! Cannot find any photos nearby");
-			areaChange = AREA_CHANGE_MAX;
-		} else if (total < 100 && searchArea !== MAX_AREA) {
-		    changeSearchArea(true);
-			areaChange = 1 + (areaChange - 1) * 0.9;
-			nextFetchMessage = 'Widening search to find more photos';
-		} else if (total > 500) {
-		    changeSearchArea(false);
-			areaChange = 1 + (areaChange - 1) * 0.9;
-			nextFetchMessage = 'Narrowing search to find closer photos';
-		} else {
-		    self.goodNumberOfPhotos = true;
-			areaChange = AREA_CHANGE_MAX;
-		}
-		if (areaChange < AREA_CHANGE_MIN) {
-		    areaChange = AREA_CHANGE_MIN;
-		}
-		if (searchArea === MAX_AREA) {
-		    areaChange = AREA_CHANGE_MAX;
+		goodNumberOfPhotos = false;
+
+		if (!noNearbyPhotos) {
+		    changeSearchArea(total);
 		}
 
-		if (self.flickrResponse === null || self.flickrResponse.isInit === true) {
+
+		if (flickrResponse === null || flickrResponse.isInit === true) {
 		    //first time, or init data
-		    self.flickrResponse = response;
-			exposePhotos();
-		} else if (!isEqual(response.photos.photo, self.flickrResponse.photos.photo)) {
+		    flickrResponse = response;
+			exposePhotos(flickrResponse.photos.photo);
+		} else if (n > 0 && !isEqual(response.photos.photo, flickrResponse.photos.photo)) {
 		    //photos have changes
-		    self.flickrResponse = response;
-			callAfterAcknowledgement("New photos are available", exposePhotos);
+		    flickrResponse = response;
+		    console.log("After button press should expose " + flickrResponse.photos.photo[0].title);
+			callAfterAcknowledgement("New photos are available", function () {
+				exposePhotos(flickrResponse.photos.photo);
+			});
 		}
 	}
 
@@ -300,14 +326,14 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		    distanceMoved = latLon.metersFrom(prevLatLon);
 			console.log("Moved " + distanceMoved + " meters " + prevLatLon.directionTo(latLon));
 			if (distanceMoved > Math.sqrt(searchArea) / 10) {
-			    movedMessage = 'Searching again because you have moved ' + 
+			    movedMessage = 'Searching. You have moved ' + 
 				                metersMsg(distanceMoved) + ' ' + prevLatLon.directionTo(latLon);
 			} else {
 			    movedMessage = null;
 			}
 			
 		}
-		if (self.goodNumberOfPhotos && movedMessage === null) {
+		if (goodNumberOfPhotos && movedMessage === null) {
 		    console.log("no need to fetch more photos");
 		    return;
 		} else if (noNearbyPhotos) {
@@ -320,9 +346,10 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		} else {
 			radius = radiusKm();
 			callFlickr(
-				movedMessage === null ? nextFetchMessage : movedMessage,
+				movedMessage === null ? 'Searching for nearby photos' : movedMessage,
 				'photos.search',
-				latLon.query() + '&radius=' + radius + '&extras=sort=interestingness-desc&min_upload_date=0&extras=geo,date_taken,url_m,url_t&per_page=100',
+				latLon.query() + '&radius=' + radius + 
+				'&extras=sort=interestingness-desc&min_upload_date=0&extras=geo,date_taken,url_m,url_t&per_page=100',
 				setPhotos
 			);
 		}
