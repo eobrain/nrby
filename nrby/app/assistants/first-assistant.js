@@ -10,11 +10,43 @@
 /*jslint devel: true */
 
 /* declare globals to keep JSLint happy */
-var Mojo, $, window; //framework
+var Mojo, $, window, HTMLElement; //framework
 var Photos, LatLon;  //models
 
 /** @class The controller for the one and only scene in this app. */
 function FirstAssistant() {
+
+	HTMLElement.prototype.animateOpacity = function (handleOpacity) {
+		if (this.opacityAnimation) {
+			this.opacityAnimation.cancel();
+		}
+		this.opacityAnimation = 
+		Mojo.Animation.animateValue(Mojo.Animation.queueForElement(this),
+									'linear', 
+									function (v) {
+										console.log("Calling handleOpacity(" + ((100 - v) / 100.0) + ")");
+										handleOpacity((100 - v) / 100.0);
+									},
+	                                {from: 0, to: 100, duration: 10 }
+									);
+	};
+
+
+	HTMLElement.prototype.fadeAway = function () {
+		var self = this;
+		this.animateOpacity(function (opacity) {
+				self.style.opacity = opacity;
+			});
+	};
+
+	HTMLElement.prototype.fadeAwayText = function () {
+		var self = this;
+		this.animateOpacity(function (opacity) {
+				self.style.color = "rgba(255,255,255," + opacity + ")";
+			});
+	};
+
+
 }
 
 /** Handle the event of the user rotating the device, resizing the image viewer accordingly. */
@@ -109,12 +141,13 @@ FirstAssistant.prototype.setup = function () {
 
 /** Create the Photos model object, and start listening for GPS location events. */
 FirstAssistant.prototype.activate = function (event) {
-    var assistant, prevTime, viewer, info, button;
+    var assistant, prevTime, viewer, info, button, buttonText;
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 
 	viewer = $('ImageId');
     button = $('continueButton');
+	buttonText = button.getElementsBySelector('.truncating-text')[0];
 	assistant = this; //for use in lambda functions
 
 	info = {
@@ -122,6 +155,9 @@ FirstAssistant.prototype.activate = function (event) {
 		set: function (message, url) {
 	        this.element.update(message);
 			this.element.setAttribute('href', url);
+			//console.log(">>>> nrbyInfoLink.constructor=" + (this.element.constructor));
+			$('nrbyInfo').fadeAway();
+			this.element.fadeAwayText();
 	        //this.element.style.display = 'block';
 	    },
 	    reset: function () {
@@ -141,7 +177,8 @@ FirstAssistant.prototype.activate = function (event) {
 	function callAfterAcknowledgement(message, callback) {
 	    var listener, continueButton;
 	    button.style.display = 'block';
-
+		button.fadeAway();
+		buttonText.fadeAwayText();
 		assistant.stopListeningToButton(); //clear any previous listeners
 
 		listener = function (event) {
@@ -229,4 +266,6 @@ FirstAssistant.prototype.cleanup = function (event) {
 	   a result of being popped off the scene stack */
 	Mojo.Event.stopListening(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, this.imageViewChanged);
 };
+
+
 
