@@ -5,29 +5,31 @@
 
 .SUFFIXES: .js .linted
 VERSION=0.5.0
-JSLINT=java -classpath build/js.jar org.mozilla.javascript.tools.shell.Main build/jslint.js
-JSDOC=java -jar jsdoc-toolkit/jsrun.jar jsdoc-toolkit/app/run.js -t=jsdoc-toolkit/templates/jsdoc
+NAME=nrby
+ID=org.eamonn.$(NAME)
 LINTED=\
- nrby/app/models/photos.linted\
- nrby/app/models/latlon.linted\
- nrby/app/assistants/first-assistant.linted\
- nrby/app/assistants/stage-assistant.linted\
+ $(NAME)/app/models/photos.linted\
+ $(NAME)/app/models/latlon.linted\
+ $(NAME)/app/assistants/first-assistant.linted\
+ $(NAME)/app/assistants/stage-assistant.linted\
  test/spec/suite.linted
 JS=\
- nrby/app/models/photos.js\
- nrby/app/assistants/first-assistant.js\
- nrby/app/assistants/stage-assistant.js
+ $(NAME)/app/models/photos.js\
+ $(NAME)/app/assistants/first-assistant.js\
+ $(NAME)/app/assistants/stage-assistant.js
+JSLINT=java -classpath build/js.jar org.mozilla.javascript.tools.shell.Main build/jslint.js
+JSDOC=java -jar jsdoc-toolkit/jsrun.jar jsdoc-toolkit/app/run.js -t=jsdoc-toolkit/templates/jsdoc
 
 run: install doc
-	palm-launch -c org.eamonn.nrby
-	palm-launch org.eamonn.nrby
+	palm-launch -c $(ID)
+	palm-launch $(ID)
 
-install: org.eamonn.nrby_$(VERSION)_all.ipk
-	- palm-install -r org.eamonn.nrby
-	palm-install org.eamonn.nrby_$(VERSION)_all.ipk
+install: $(ID)_$(VERSION)_all.ipk
+	- palm-install -r $(ID)
+	palm-install $(ID)_$(VERSION)_all.ipk
 
-org.eamonn.nrby_$(VERSION)_all.ipk: lint nrby/appinfo.json nrby/* nrby/*/* nrby/*/*/* 
-	palm-package nrby
+$(ID)_$(VERSION)_all.ipk: lint $(NAME)/appinfo.json $(NAME)/* $(NAME)/*/* $(NAME)/*/*/* 
+	palm-package $(NAME)
 
 lint: $(LINTED)
 
@@ -36,9 +38,9 @@ lint: $(LINTED)
 	touch $@
 
 doc:
-	$(JSDOC) -d=apidoc -r nrby/app/models nrby/app/assistants
+	$(JSDOC) -d=apidoc -r $(NAME)/app/models $(NAME)/app/assistants
 
-nrby/appinfo.json: appinfo-template.json
+$(NAME)/appinfo.json: appinfo-template.json
 	cp appinfo-template.json $@
 	: EDIT $@ FILE AND INSERT YOUR FLICKR API KEY
 	false
@@ -47,4 +49,4 @@ clean:
 	rm -r apidoc
 
 publish-doc: doc
-	scp -r apidoc nrby.eamonn.org:nrby.eamonn.org/apidoc
+	scp -r apidoc $(NAME).eamonn.org:$(NAME).eamonn.org/apidoc
