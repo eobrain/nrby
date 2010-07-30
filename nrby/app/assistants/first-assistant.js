@@ -73,7 +73,7 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 
 	//Move status and button to bottom
 	$('nrbyStatus').style.top     = (size[1] - 60) + "px";
-	$('continueButton').style.top = (size[1] - 60) + "px";
+	$('refreshButton').style.top = (size[1] - 60) + "px";
 };
 
 /** Setup the ImageViewer widget and various callback functions to be sent to the model. */
@@ -124,7 +124,7 @@ FirstAssistant.prototype.setup = function () {
 	};
 
 	this.controller.setupWidget('ImageId', {}, viewerModel);
-	this.controller.setupWidget("continueButton", {}, buttonModel);
+	this.controller.setupWidget("refreshButton", {}, buttonModel);
 
     appCtl = Mojo.Controller.getAppController();
 
@@ -146,7 +146,7 @@ FirstAssistant.prototype.activate = function (event) {
 	   example, key handlers that are observing the document */
 
 	viewer = $('ImageId');
-    button = $('continueButton');
+    button = $('refreshButton');
 	buttonText = button.getElementsBySelector('.truncating-text')[0];
 	assistant = this; //for use in lambda functions
 
@@ -175,7 +175,7 @@ FirstAssistant.prototype.activate = function (event) {
 	this.stopListeningToButton = function () { /* do nothing*/ };
 
 	function callAfterAcknowledgement(message, callback) {
-	    var listener, continueButton;
+	    var listener, refreshButton;
 	    button.style.display = 'block';
 		button.fadeAway();
 		buttonText.fadeAwayText();
@@ -187,12 +187,12 @@ FirstAssistant.prototype.activate = function (event) {
 			button.style.display = 'none';
 		}.bindAsEventListener(assistant);	
 
-		continueButton = assistant.controller.get("continueButton");
+		refreshButton = assistant.controller.get("refreshButton");
 
-		Mojo.Event.listen(continueButton, Mojo.Event.tap, listener);
+		Mojo.Event.listen(refreshButton, Mojo.Event.tap, listener);
 		
 		assistant.stopListeningToButton = function () {
-		    Mojo.Event.stopListening(continueButton, Mojo.Event.tap, listener);
+		    Mojo.Event.stopListening(refreshButton, Mojo.Event.tap, listener);
 		};
 
 	    console.log(message);
