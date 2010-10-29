@@ -3,3 +3,5 @@
 #nrbyInfo   {font-size: small; overflow:hidden; position: absolute; top: 0;}
 #refreshButton {position:absolute; right:0; z-index:99999;display:none;}
 #wallpaperButton {position:absolute; left:0; z-index:99999;display:none;}
+#infoTitle {overflow:hidden;}
+#infoBody {margin-top:65px; text-align:center;}
