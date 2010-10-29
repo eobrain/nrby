@@ -13,6 +13,7 @@ var Ajax, Mojo;   //framework
 var nrbyInitData, LatLon; //model
 
 
+
 /**
    Initialize everything and display default built-in photos while waiting for the network.
    @class A list of photos returned by a Flickr search, with a pointer to
@@ -24,6 +25,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	Mojo.requireFunction(alertUser);
 	Mojo.requireFunction(showPhotos);
 	Mojo.requireFunction(callAfterAcknowledgement);
+
 
 	var MILE, FOOT, MAX_AREA, IDEAL_PHOTO_COUNT,
 	    self, index, array, placeName, searchArea, noNearbyPhotos, density,
@@ -47,6 +49,11 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	prevLatLon = null;
 	currentLatLon = null;
 
+	/** this funtion is actually attached to a Photo object --  get photo page of photo 
+       @type String */
+	function photoPage() {
+		return "http://www.flickr.com/photos/" + this.owner + "/" + this.id + "/";
+	}
 	
 	flickrResponse = null;  // The previous response from Flickr.
 
@@ -126,7 +133,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		...,9,7,5,3,1,0,2,4,6,8,...  so that most interesting are
 		closest to center */
 	function exposePhotos(photoArray) {
-	    var i, n, center;
+	    var i, n, center, permuted;
 		n = photoArray.length;
 		console.log(n === 0 ? "no photos to expose" : "exposing " + photoArray[0].title);
 		if (n === 0) {
@@ -135,10 +142,12 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		center = ((n % 2) === 0)  ?  n / 2  :  (n - 1) / 2;
 		for (i = 0; i < n; i += 1) {
 			if (i % 2 === 0) { //even
-				array[center  +  i / 2] = photoArray[i];
+				permuted = center  +  i / 2;
 			} else { //odd
-				array[center  -  (i + 1) / 2] = photoArray[i];
+				permuted = center  -  (i + 1) / 2;
 			}
+			array[permuted] = photoArray[i];
+			array[permuted].photoPage = photoPage;
 		}
 		index = center;
 		if (index >= 0 && array.length > 0) {
@@ -280,6 +289,12 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		info.set(title, "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/");
 	};
 
+	/** get center photo 
+       @type String */
+	this.center = function () {
+		return array[index];
+	};
+	
 	/** Move current photo one to the left (wrapping around at the end) 
 		@type void
 	 */
@@ -324,7 +339,9 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 			movedMessage = 'Searching for nearby photos';
 		} else {
 		    distanceMoved = latLon.metersFrom(prevLatLon);
-			console.log("Moved " + distanceMoved + " meters " + prevLatLon.directionTo(latLon));
+			if (distanceMoved > 0) {
+				console.log("Moved " + distanceMoved + " meters " + prevLatLon.directionTo(latLon));
+			}
 			if (distanceMoved > Math.sqrt(searchArea) / 10) {
 			    movedMessage = 'Searching. You have moved ' + 
 				                metersMsg(distanceMoved) + ' ' + prevLatLon.directionTo(latLon);
@@ -334,7 +351,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 			
 		}
 		if (goodNumberOfPhotos && movedMessage === null) {
-		    console.log("no need to fetch more photos");
+		    //console.log("no need to fetch more photos");
 		    return;
 		} else if (noNearbyPhotos) {
 			callFlickr(
@@ -358,3 +375,13 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 
 	setPhotos(nrbyInitData);
 }
+
+
+/* * get photo page of photo 
+       @type String * /
+Photos.photoPage = function (photo) {
+	return "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/";
+}*/
+
+	
+

@@ -13,7 +13,7 @@
 var Mojo, $, window, HTMLElement; //framework
 var Photos, LatLon;  //models
 
-/** @class The controller for the one and only scene in this app. */
+/** @class The controller for the main photo-display scene. */
 function FirstAssistant() {
 
 	HTMLElement.prototype.animateOpacity = function (handleOpacity) {
@@ -24,7 +24,6 @@ function FirstAssistant() {
 		Mojo.Animation.animateValue(Mojo.Animation.queueForElement(this),
 									'linear', 
 									function (v) {
-										//console.log("Calling handleOpacity(" + ((100 - v) / 100.0) + ")");
 										handleOpacity((100 - v) / 100.0);
 									},
 	                                {from: 0, to: 100, duration: 10 }
@@ -80,7 +79,7 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 /** Setup the ImageViewer widget and various callback functions to be sent to the model. */
 FirstAssistant.prototype.setup = function () {
     var assistant, viewerModel, refreshButtonModel, wallpaperButtonModel,
-	viewer, appCtl, ctl, refreshButton;
+	viewer, appCtl, ctl, refreshButton, pushSceneListener;
 
 	viewer = $('ImageId');
     refreshButton   = $('refreshButton');
@@ -145,14 +144,23 @@ FirstAssistant.prototype.setup = function () {
 
     appCtl = Mojo.Controller.getAppController();
 
-	/** callback function used to respond to new photo being displayed by ImageViewer */
+	/** callback function used to respond to new photo being displayed
+	by ImageViewer */
     this.imageViewChanged = function (event) {
 	    //console.log(" ====== imageViewChanged(" + event + ")");
 	    FirstAssistant.prototype.orientationChanged(appCtl.getScreenOrientation());
 		assistant.status.reset();
 	}.bindAsEventListener(this);
 
-	Mojo.Event.listen(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, this.imageViewChanged);
+
+	pushSceneListener = function (event) {
+		console.log("PUSHING SCENE");
+		Mojo.Controller.stageController.pushScene('photoinfo', assistant.photos.center());
+	}.bindAsEventListener(assistant);	
+
+	Mojo.Event.listen(viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
+	Mojo.Event.listen(viewer, Mojo.Event.tap, pushSceneListener);
+
 }; //setup
 
 
@@ -160,6 +168,15 @@ FirstAssistant.prototype.setup = function () {
 FirstAssistant.prototype.activate = function (event) {
     var assistant, prevTime, viewer, info,
 	    refreshButton, refreshButtonText, wallpaperButton, wallpaperButtonText;
+
+	console.log(">>> BEGIN first.activate -- this.activateDone=" + this.activateDone);
+
+	if (this.activateDone === true) {
+	    console.log(">>> Not doing setup because already setup");
+		return;
+	}
+
+
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 
@@ -274,6 +291,10 @@ FirstAssistant.prototype.activate = function (event) {
 		    showDialogBox("Problem calling Flickr", response);
 		}
 	});
+
+	this.activateDone = true;
+	console.log(">>> END   first.activate -- this.activateDone=" + this.activateDone);
+
 };
 
 FirstAssistant.prototype.deactivate = function (event) {

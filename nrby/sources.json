@@ -15,5 +15,9 @@
     {
         "scenes": "first",
         "source": "app/assistants/first-assistant.js"
+    },
+    {
+        "scenes": "photoinfo",
+        "source": "app/assistants/photoinfo-assistant.js"
     }
 ]

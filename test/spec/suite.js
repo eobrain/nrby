@@ -51,6 +51,36 @@ describe('Photos', function () {
 		expect(photos.urlsRight()[0]).toEqual(url2);
     });
 
+    it('has a center photo', function () {
+		var photos, photo;
+		photos = new Photos(status, info, alertUserStub, showPhotosStub);
+		photo = photos.center();
+		expect(photo.title).toEqual("San Francisco drops away behind us.");
+	});
+
+});
+
+describe('Photo', function () {
+	var photos, info, status;
+
+	status = jasmine.createSpyObj('Status', ['set', 'reset']);
+	info   = jasmine.createSpyObj('Status', ['set']);
+
+	function alertUserStub(message) {}
+
+	function showPhotosStub(left, center, middle) {}
+
+	photos = new Photos(status, info, alertUserStub, showPhotosStub);
+
+    it('has title', function () {
+		var photo = photos.center();
+		expect(photo.title).toEqual("San Francisco drops away behind us.");
+	});
+
+    it('has photoPage', function () {
+		var photo = photos.center();
+		expect(photo.photoPage()).toEqual("http://www.flickr.com/photos/35034364763@N01/126046266/");
+	});
 });
 
 describe('LatLon', function () {
