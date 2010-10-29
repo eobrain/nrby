@@ -24,7 +24,7 @@ function FirstAssistant() {
 		Mojo.Animation.animateValue(Mojo.Animation.queueForElement(this),
 									'linear', 
 									function (v) {
-										console.log("Calling handleOpacity(" + ((100 - v) / 100.0) + ")");
+										//console.log("Calling handleOpacity(" + ((100 - v) / 100.0) + ")");
 										handleOpacity((100 - v) / 100.0);
 									},
 	                                {from: 0, to: 100, duration: 10 }
@@ -74,13 +74,16 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 	//Move status and button to bottom
 	$('nrbyStatus').style.top     = (size[1] - 60) + "px";
 	$('refreshButton').style.top = (size[1] - 60) + "px";
+	$('wallpaperButton').style.top = (size[1] - 60) + "px";
 };
 
 /** Setup the ImageViewer widget and various callback functions to be sent to the model. */
 FirstAssistant.prototype.setup = function () {
-    var assistant, viewerModel, buttonModel, viewer, appCtl, ctl;
+    var assistant, viewerModel, refreshButtonModel, wallpaperButtonModel,
+	viewer, appCtl, ctl, refreshButton;
 
 	viewer = $('ImageId');
+    refreshButton   = $('refreshButton');
 
 	assistant = this; //for use in lambda functions
 
@@ -107,24 +110,38 @@ FirstAssistant.prototype.setup = function () {
 	viewerModel = {
 		background: 'black',  
 		onLeftFunction : function (event) {
+			var refreshButtonText;
+			refreshButtonText   = refreshButton.getElementsBySelector('.truncating-text')[0];
 		    assistant.photos.moveLeft();
 		    assistant.provideUrl(viewer.mojo.leftUrlProvided, assistant.photos.urlsLeft());
 			assistant.photos.showInfo();
+			refreshButton.fadeAway();
+			refreshButtonText.fadeAwayText();
 	    }.bind(this),
 		onRightFunction : function (event) {
+			var refreshButtonText;
+			refreshButtonText   = refreshButton.getElementsBySelector('.truncating-text')[0];
 		    assistant.photos.moveRight();
 		    assistant.provideUrl(viewer.mojo.rightUrlProvided, assistant.photos.urlsRight());
 			assistant.photos.showInfo();
+			refreshButton.fadeAway();
+			refreshButtonText.fadeAwayText();
 	    }.bind(this)
 	};
 
-    buttonModel = {
+    refreshButtonModel = {
 	    label : "Refresh",
 	    disabled: false
 	};
 
+    wallpaperButtonModel = {
+	    label : "Set as Wallpaper",
+	    disabled: false
+	};
+
 	this.controller.setupWidget('ImageId', {}, viewerModel);
-	this.controller.setupWidget("refreshButton", {}, buttonModel);
+	this.controller.setupWidget("refreshButton", {}, refreshButtonModel);
+	this.controller.setupWidget("wallpaperButton", {}, wallpaperButtonModel);
 
     appCtl = Mojo.Controller.getAppController();
 
@@ -141,13 +158,16 @@ FirstAssistant.prototype.setup = function () {
 
 /** Create the Photos model object, and start listening for GPS location events. */
 FirstAssistant.prototype.activate = function (event) {
-    var assistant, prevTime, viewer, info, button, buttonText;
+    var assistant, prevTime, viewer, info,
+	    refreshButton, refreshButtonText, wallpaperButton, wallpaperButtonText;
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 
 	viewer = $('ImageId');
-    button = $('refreshButton');
-	buttonText = button.getElementsBySelector('.truncating-text')[0];
+    refreshButton   = $('refreshButton');
+    wallpaperButton = $('wallpaperButton');
+	refreshButtonText   = refreshButton.getElementsBySelector('.truncating-text')[0];
+	wallpaperButtonText = wallpaperButton.getElementsBySelector('.truncating-text')[0];
 	assistant = this; //for use in lambda functions
 
 	info = {
@@ -172,26 +192,28 @@ FirstAssistant.prototype.activate = function (event) {
 		assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlsRight);
 	}
 
-	this.stopListeningToButton = function () { /* do nothing*/ };
+	this.stopListeningToRefreshButton = function () { /* do nothing*/ };
+	this.stopListeningToWallpaperButton = function () { /* do nothing*/ };
 
 	function callAfterAcknowledgement(message, callback) {
-	    var listener, refreshButton;
-	    button.style.display = 'block';
-		button.fadeAway();
-		buttonText.fadeAwayText();
-		assistant.stopListeningToButton(); //clear any previous listeners
+	    var listener;
+		console.log("callAfterAcknowledgement(\"" + message + "\",)");
+	    refreshButton.style.display = 'block';
+		refreshButton.fadeAway();
+		refreshButtonText.fadeAwayText();
+		assistant.stopListeningToRefreshButton(); //clear any previous listeners
 
 		listener = function (event) {
 			console.log("BUTTON PRESSED");
 			callback();
-			button.style.display = 'none';
+			refreshButton.style.display = 'none';
 		}.bindAsEventListener(assistant);	
 
 		refreshButton = assistant.controller.get("refreshButton");
 
 		Mojo.Event.listen(refreshButton, Mojo.Event.tap, listener);
 		
-		assistant.stopListeningToButton = function () {
+		assistant.stopListeningToRefreshButton = function () {
 		    Mojo.Event.stopListening(refreshButton, Mojo.Event.tap, listener);
 		};
 
@@ -257,7 +279,8 @@ FirstAssistant.prototype.activate = function (event) {
 FirstAssistant.prototype.deactivate = function (event) {
 	/* remove any event handlers you added in activate and do any other cleanup that should happen before
 	   this scene is popped or another scene is pushed on top */
-    this.stopListeningToButton(); //clear any previous listeners
+    this.stopListeningToRefreshButton(); //clear any previous listeners
+    this.stopListeningToWallpaperButton(); //clear any previous listeners
 };
 
 /** Stop listening to the ImageViewer widget */
