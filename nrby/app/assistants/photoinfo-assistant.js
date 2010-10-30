@@ -20,11 +20,12 @@ function PhotoinfoAssistant(photo) {
 	   additional parameters (after the scene name) that were passed to pushScene. The reference
 	   to the scene controller (this.controller) has not be established yet, so any initialization
 	   that needs the scene controller should be done in the setup function below. */
-	console.log("PhotoInfoAssistant(" + photo.title + ")");
+	console.log("PhotoInfoAssistant(" + photo.title + "," + photo.ownername + ")");
 	this.photo = photo;
 	$('infoTitle').update(photo.title);
 	$('infoThumb').setAttribute('src', photo.url_t);
-	$('license').update('Copyright: ' + nrbyFlickrLicenses[photo.license].name);
+	$('license').update('Copyright ' + photo.ownername +
+						' (' + nrbyFlickrLicenses[photo.license].name + ')');
 }
 
 PhotoinfoAssistant.prototype.setup = function () {
