@@ -355,7 +355,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 			}
 			
 		}
-		flickrArgs = '&sort=interestingness-desc&extras=geo,date_taken,url_m,url_t,license,owner_name&per_page=100';
+		flickrArgs = '&sort=interestingness-desc&extras=geo,date_taken,url_m,url_t,license,owner_name&per_page=100&';
 		if (goodNumberOfPhotos && movedMessage === null) {
 		    //console.log("no need to fetch more photos");
 		    return;
