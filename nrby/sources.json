@@ -19,5 +19,9 @@
     {
         "scenes": "photoinfo",
         "source": "app/assistants/photoinfo-assistant.js"
+    },
+    {
+        "scenes": "webpage",
+        "source": "app/assistants/webpage-assistant.js"
     }
 ]
