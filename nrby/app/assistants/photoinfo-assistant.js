@@ -15,21 +15,39 @@ var nrbyFlickrLicenses;
 
 /** @class The controller for the scene that shows information and
 provides controls for a particular photo. */
-function PhotoinfoAssistant(photo) {
+function PhotoinfoAssistant(photos, goLeft, goRight) {
 	/* this is the creator function for your scene assistant object. It will be passed all the 
 	   additional parameters (after the scene name) that were passed to pushScene. The reference
 	   to the scene controller (this.controller) has not be established yet, so any initialization
 	   that needs the scene controller should be done in the setup function below. */
-	console.log("PhotoInfoAssistant(" + photo.title + "," + photo.ownername + ")");
-	this.photo = photo;
-	$('infoTitle').update(photo.title);
-	$('infoThumb').setAttribute('src', photo.url_t);
-	$('license').update('Copyright ' + photo.ownername +
-						' (' + nrbyFlickrLicenses[photo.license].name + ')');
+	var self = this;
+
+	this.photos = photos;
+
+	this.repaint = function () {
+		var photo = photos.center();
+		$('infoTitle').update(photo.title);
+		$('infoThumb').setAttribute('src', photo.url_t);
+		$('license').update('Copyright ' + photo.ownername +
+							' (' + nrbyFlickrLicenses[photo.license].name + ')');
+		photos.refreshPhotoView();
+	};
+	this.repaint();
+
+	this.flickListener = function (event) {
+		if (event.velocity.x > 0) {
+			console.log("FLICK RIGHT");
+			goRight();
+		} else {
+			console.log("FLICK LEFT");
+			goLeft();
+		}
+		self.repaint();
+	};
 }
 
 PhotoinfoAssistant.prototype.setup = function () {
-	var self, gotoPhotoPage;
+	var self, gotoPhotoPage, flickListener;
 
 	self = this;
 
@@ -42,22 +60,12 @@ PhotoinfoAssistant.prototype.setup = function () {
 
 	gotoPhotoPage = function (event) {
 		console.log("GOTO PHOTO PAGE BUTTON PRESSED");
-		Mojo.Controller.stageController.pushScene('webpage', self.photo);
-		/*self.controller.serviceRequest("palm://com.palm.applicationManager", {
-			method: "open",
-			parameters:  {
-				id: 'com.palm.app.browser',
-				params: {
-					target: self.photo.photoPage()
-				}
-			}
-		});*/ 
-		
+		Mojo.Controller.stageController.pushScene('webpage', self.photos.center());
 	}.bindAsEventListener(this);	
-	
-	
+		
 	/* add event handlers to listen to events from widgets */
-	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap, gotoPhotoPage);
+	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap,   gotoPhotoPage);
+	Mojo.Event.listen($('infoBody'),      Mojo.Event.flick, this.flickListener.bindAsEventListener(this));
 };
 
 PhotoinfoAssistant.prototype.activate = function (event) {

@@ -106,23 +106,31 @@ FirstAssistant.prototype.setup = function () {
 	    provided(urls[1], urls[0]);
 	};
 
+	function goLeft() {
+		assistant.photos.moveLeft();
+		assistant.provideUrl(viewer.mojo.leftUrlProvided, assistant.photos.urlsLeft());
+		assistant.photos.showInfo();
+	}
+
+	function goRight() {
+		assistant.photos.moveRight();
+		assistant.provideUrl(viewer.mojo.rightUrlProvided, assistant.photos.urlsRight());
+		assistant.photos.showInfo();
+	}
+
 	viewerModel = {
 		background: 'black',  
 		onLeftFunction : function (event) {
 			var refreshButtonText;
 			refreshButtonText   = refreshButton.getElementsBySelector('.truncating-text')[0];
-		    assistant.photos.moveLeft();
-		    assistant.provideUrl(viewer.mojo.leftUrlProvided, assistant.photos.urlsLeft());
-			assistant.photos.showInfo();
+			goLeft();
 			refreshButton.fadeAway();
 			refreshButtonText.fadeAwayText();
 	    }.bind(this),
 		onRightFunction : function (event) {
 			var refreshButtonText;
 			refreshButtonText   = refreshButton.getElementsBySelector('.truncating-text')[0];
-		    assistant.photos.moveRight();
-		    assistant.provideUrl(viewer.mojo.rightUrlProvided, assistant.photos.urlsRight());
-			assistant.photos.showInfo();
+			goRight();
 			refreshButton.fadeAway();
 			refreshButtonText.fadeAwayText();
 	    }.bind(this)
@@ -147,15 +155,13 @@ FirstAssistant.prototype.setup = function () {
 	/** callback function used to respond to new photo being displayed
 	by ImageViewer */
     this.imageViewChanged = function (event) {
-	    //console.log(" ====== imageViewChanged(" + event + ")");
 	    FirstAssistant.prototype.orientationChanged(appCtl.getScreenOrientation());
 		assistant.status.reset();
 	}.bindAsEventListener(this);
 
 
 	pushSceneListener = function (event) {
-		console.log("PUSHING SCENE");
-		Mojo.Controller.stageController.pushScene('photoinfo', assistant.photos.center());
+		Mojo.Controller.stageController.pushScene('photoinfo', assistant.photos, goLeft, goRight);
 	}.bindAsEventListener(assistant);	
 
 	Mojo.Event.listen(viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
@@ -223,6 +229,7 @@ FirstAssistant.prototype.activate = function (event) {
 		listener = function (event) {
 			console.log("BUTTON PRESSED");
 			callback();
+			assistant.photos.refreshPhotoView();
 			refreshButton.style.display = 'none';
 		}.bindAsEventListener(assistant);	
 

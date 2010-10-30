@@ -152,8 +152,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		index = center;
 		if (index >= 0 && array.length > 0) {
 		    console.log('Fetching photo ' + array[index].title + ' ...');
-			showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
-			self.showInfo();
+			self.refreshPhotoView();
 		}
 	}
 
@@ -274,6 +273,12 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	}
 
 	/* begin public members that can access private members */
+
+	/** Make view in sync with model */
+	this.refreshPhotoView = function () {
+		showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
+		self.showInfo();
+	};
 
 	/** Display title on URL on the info object.
 	 @type void */
