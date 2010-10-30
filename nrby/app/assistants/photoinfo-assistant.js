@@ -11,6 +11,7 @@
 
 /* declare globals to keep JSLint happy */
 var Mojo, $; //framework
+var nrbyFlickrLicenses;
 
 /** @class The controller for the scene that shows information and
 provides controls for a particular photo. */
@@ -23,6 +24,7 @@ function PhotoinfoAssistant(photo) {
 	this.photo = photo;
 	$('infoTitle').update(photo.title);
 	$('infoThumb').setAttribute('src', photo.url_t);
+	$('license').update('Copyright: ' + nrbyFlickrLicenses[photo.license].name);
 }
 
 PhotoinfoAssistant.prototype.setup = function () {

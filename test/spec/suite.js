@@ -196,3 +196,28 @@ describe('LatLon', function () {
 	});
 
 });
+
+describe('Licenses', function () {
+
+	it('includes all-rights-reserved license', function () {
+		expect(nrbyFlickrLicenses[0].name).toEqual('All Rights Reserved');
+	});
+
+	it('includes a creative-commons license', function () {
+		expect(nrbyFlickrLicenses[2].name).toEqual('Attribution-NonCommercial License');
+	});
+
+	it('may have URLs', function () {
+		expect(nrbyFlickrLicenses[2].url).toEqual("http:\/\/creativecommons.org\/licenses\/by-nc\/2.0\/");
+	});
+
+	it('can be re-usable', function () {
+		expect(nrbyFlickrLicenses[0].canReuse()).toEqual(false);
+		expect(nrbyFlickrLicenses[2].canReuse()).toEqual(true);
+		expect(nrbyFlickrLicenses[4].canReuse()).toEqual(true);
+		expect(nrbyFlickrLicenses[7].canReuse()).toEqual(true);
+		expect(nrbyFlickrLicenses[8].canReuse()).toEqual(true);
+	});
+
+});
+

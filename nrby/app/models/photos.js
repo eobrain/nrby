@@ -332,7 +332,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	/** fetch new photos by doing a Flickr search
 	 @type void */
 	this.fetch = function (latLon) {
-	    var radius, distanceMoved, movedMessage;
+	    var radius, distanceMoved, movedMessage, flickrArgs;
 		currentLatLon = latLon;
 		if (prevLatLon === null) {
 		    distanceMoved = null;
@@ -350,6 +350,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 			}
 			
 		}
+		flickrArgs = '&sort=interestingness-desc&extras=geo,date_taken,url_m,url_t,license&per_page=100';
 		if (goodNumberOfPhotos && movedMessage === null) {
 		    //console.log("no need to fetch more photos");
 		    return;
@@ -357,16 +358,17 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 			callFlickr(
 				'No nearby photos.  Finding some elsewhere.',
 				'photos.search',
-				'&sort=interestingness-desc&user_id=35034364763@N01&extras=geo,date_taken,url_m,url_t&per_page=100',
+				flickrArgs + 'user_id=35034364763@N01',
 				setPhotos
 			);
 		} else {
+			//Normal case
 			radius = radiusKm();
 			callFlickr(
 				movedMessage === null ? 'Searching for nearby photos' : movedMessage,
 				'photos.search',
 				latLon.query() + '&radius=' + radius + 
-				'&extras=sort=interestingness-desc&min_upload_date=0&extras=geo,date_taken,url_m,url_t&per_page=100',
+				flickrArgs + 'min_upload_date=0',
 				setPhotos
 			);
 		}
