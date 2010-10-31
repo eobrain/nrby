@@ -28,8 +28,8 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 		var photo = photos.center();
 		$('infoTitle').update(photo.title);
 		$('infoThumb').setAttribute('src', photo.url_t);
-		$('license').update('Copyright ' + photo.ownername +
-							' (' + nrbyFlickrLicenses[photo.license].name + ')');
+		$('author').update('Copyright ' + photo.ownername);
+		$('license').update('(' + nrbyFlickrLicenses[photo.license].name + ')');
 		photos.refreshPhotoView();
 	};
 	this.repaint();
@@ -46,25 +46,91 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 	};
 }
 
+
+
 PhotoinfoAssistant.prototype.setup = function () {
-	var self, gotoPhotoPage, flickListener;
+	var self, controller, gotoPhotoPage, /*setWallpaper,*/ flickListener;
 
 	self = this;
+    controller = this.controller;
 
 	/* this function is for setup tasks that have to happen when the scene is first created */
 		
 	/* use Mojo.View.render to render view templates and add them to the scene, if needed */
 	
 	/* setup widgets here */
-	this.controller.setupWidget('gotoPhotoPage', {}, {label : "View on Flickr"});
+	controller.setupWidget('gotoPhotoPage', {}, {label : "View on Flickr"});
+	//controller.setupWidget('setWallpaper',  {}, {label : "Set As Wallpaper"});
 
 	gotoPhotoPage = function (event) {
 		console.log("GOTO PHOTO PAGE BUTTON PRESSED");
 		Mojo.Controller.stageController.pushScene('webpage', self.photos.center());
 	}.bindAsEventListener(this);	
 		
+
+	/*function downloadAndSetWallpaper(url) {
+
+		console.log("DOWNLOADING " + url);
+		controller.serviceRequest(
+			'palm://com.palm.downloadmanager/', 
+			{
+				method: 'download', 
+				parameters: {
+					target: url,
+					mime: "image/jpeg",
+					targetDir : "/media/internal/downloads/",
+					targetFilename : "nrbyWallpaper.jpg",
+					keepFilenameOnRedirect: true,
+					subscribe: false
+				},
+				onSuccess: function (resp) {
+					console.log("DOWNLOADED " + Object.toJSON(resp));
+					controller.serviceRequest(
+						'palm://com.palm.systemservice/wallpaper', 
+						{
+							method: "importWallpaper",
+							parameters: {
+								target: "file:///media/internal/downloads/nrbyWallpaper.jpg"
+							},
+							onSuccess: function (returnValue, wallpaper) {
+								console.log("IMPORTED WALLPAPER " + Object.toJSON(returnValue) + " " + Object.toJSON(wallpaper));
+								
+						
+								controller.serviceRequest(
+									'palm://com.palm.systemservice/', 
+									{
+										method: "setPreferences",
+										parameters: {
+											wallpaper: wallpaper
+										},
+										onSuccess: function () {
+											console.log("set wallpaper");
+										},
+										onFailure: function (e) {
+											console.log("FAILED setting wallpaper " + Object.toJSON(e));
+										}
+									});
+								
+							},
+							onFailure: function (e) {
+								console.log("FAILED IMPORTED WALLPAPER " + Object.toJSON(e));
+							}
+						});  
+				},
+				onFailure: function (e) { 
+					console.log("FAILED DOWNLOADING " + Object.toJSON(e));
+				}
+			});
+	}*/
+
+	/*setWallpaper = function (event) {
+		console.log("SET WALLPAPER BUTTON PRESSED");
+		downloadAndSetWallpaper(self.photos.urlsCenter()[1]);
+	}.bindAsEventListener(this);*/
+		
 	/* add event handlers to listen to events from widgets */
 	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap,   gotoPhotoPage);
+	//Mojo.Event.listen($('setWallpaper'),     Mojo.Event.tap,   setWallpaper);
 	Mojo.Event.listen($('infoBody'),      Mojo.Event.flick, this.flickListener.bindAsEventListener(this));
 };
 

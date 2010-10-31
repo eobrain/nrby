@@ -5,3 +5,4 @@
 #wallpaperButton {position:absolute; left:0; z-index:99999;display:none;}
 #infoTitle {overflow:hidden;}
 #infoBody {margin-top:65px; text-align:center;}
+#infoThumb {float:left;}
