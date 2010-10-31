@@ -165,8 +165,8 @@ FirstAssistant.prototype.setup = function () {
 	}.bindAsEventListener(assistant);	
 
 	Mojo.Event.listen(viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
-	Mojo.Event.listen(viewer, Mojo.Event.tap, pushSceneListener);
-
+	Mojo.Event.listen(viewer, Mojo.Event.hold, pushSceneListener);
+	//Mojo.Event.listen($('scene'), Mojo.Event.forward, pushSceneListener);
 }; //setup
 
 
@@ -194,17 +194,17 @@ FirstAssistant.prototype.activate = function (event) {
 	assistant = this; //for use in lambda functions
 
 	info = {
-	    element: $('nrbyInfoLink'),
+	    //element: $('nrbyInfo'),
 		set: function (message, url) {
-	        this.element.update(message);
-			this.element.setAttribute('href', url);
+	        //this.element.update(message);
+			//this.element.setAttribute('href', url);
 			//console.log(">>>> nrbyInfoLink.constructor=" + (this.element.constructor));
-			$('nrbyInfo').fadeAway();
-			this.element.fadeAwayText();
+			//$('nrbyInfo').fadeAway();
+			//this.element.fadeAwayText();
 	        //this.element.style.display = 'block';
 	    },
 	    reset: function () {
-	        this.element.update('-------');
+	        //this.element.update('-------');
 	        //this.element.style.display = 'none';	  
 	    }
 	};
