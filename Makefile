@@ -12,7 +12,7 @@ ORG=org.eamonn
 JS=$(wildcard \
  $(NAME)/app/models/*.js\
  $(NAME)/app/assistants/*-assistant.js\
- test/spec/suite.linted)
+ test/spec/suite.js)
 LINTED := $(JS:.js=.linted)
 
 ID=$(ORG).$(NAME)
@@ -38,7 +38,8 @@ lint: $(LINTED)
 
 doc:
 	$(JSDOC) -d=apidoc -r $(NAME)/app/models $(NAME)/app/assistants
-
+	: View file://$(PWD)/apidoc/index.html   to see documantation
+ 
 $(NAME)/appinfo.json: appinfo-template.json
 	cp appinfo-template.json $@
 	: EDIT $@ FILE AND INSERT YOUR FLICKR API KEY
@@ -53,3 +54,6 @@ publish-doc: doc
 
 follow-log:
 	palm-log -f $(ID)
+
+test: lint doc
+	: View file://$(PWD)/test/runner.html   to execute the tests

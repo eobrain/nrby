@@ -9,8 +9,9 @@
 
 /*jslint devel: true */
 /* declare globals to keep JSLint happy */
-var describe, it, expect, spyOn, jasmine;  //jasmine test framework  
-var Photos, LatLon, Mojo;                //code being tested
+var setTimeout;
+var describe, it, expect, spyOn, jasmine, runs, waits;  //jasmine test framework  
+var Photos, LatLon, nrbyFlickrLicenses, Inactivity, Mojo; //code being tested
 
 describe('Photos', function () {
 	var alertMsg, statusMsg, showPhotosCalled, info, status;
@@ -218,6 +219,64 @@ describe('Licenses', function () {
 		expect(nrbyFlickrLicenses[7].canReuse()).toEqual(true);
 		expect(nrbyFlickrLicenses[8].canReuse()).toEqual(true);
 	});
+
+});
+
+describe('Inactivity', function () {
+
+	it('can cause a function to be executed in the future', function () {
+
+		runs(function () {
+			var inactivity, self;
+			inactivity = new Inactivity(1000);
+			Inactivity.userActivity();
+			this.start = new Date().getTime();
+			this.later = null;
+			inactivity.execWhenInactive(function () {
+				this.later = new Date().getTime() - this.start;
+			}.bind(this));
+		});
+
+		waits(3000);
+
+		runs(function () {
+			expect(this.later).toBeTruthy();
+			expect(this.later).toBeGreaterThan(1000 - 10);
+			expect(this.later).toBeLessThan(2000);
+		});
+		
+	});
+
+	it('can cause a functions execution to be delayed by activity', function () {
+
+		runs(function () {
+			var inactivity, self;
+			inactivity = new Inactivity(1000);
+			Inactivity.userActivity();
+			this.start = new Date().getTime();
+			this.later = null;
+
+			inactivity.execWhenInactive(function () {
+				this.later = new Date().getTime() - this.start;
+				console.log("Setting later to " + this.later);
+			}.bind(this));
+
+			setTimeout(Inactivity.userActivity, 800);
+			setTimeout(Inactivity.userActivity, 1600);
+			setTimeout(Inactivity.userActivity, 2400);
+		});
+
+		waits(5400);
+
+		runs(function () {
+			expect(this.later).toBeTruthy();
+			expect(this.later).toBeGreaterThan(3400 - 10);
+			expect(this.later).toBeLessThan(4400);
+		}, 5400);
+
+	});
+
+
 
 });
 

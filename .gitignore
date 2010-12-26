@@ -1,5 +1,7 @@
+nrby/appinfo.json
 nrby/app/models/*.linted
 nrby/app/assistants/*.linted
+test/spec/*.linted
 apidoc
 *.ipk
 *~
