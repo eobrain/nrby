@@ -7,6 +7,10 @@
  * which is available at http://www.eclipse.org/legal/epl-v10.html
  */
 
+/*jslint devel: true */
+/* declare globals to keep JSLint happy */
+var Mojo, $L; //framework
+
 /** @class The only stage in this app (containing a single scene). */
 function StageAssistant() {
 }
@@ -23,3 +27,45 @@ StageAssistant.prototype.setup = function () {
 	}
 
 };
+
+StageAssistant.prototype.appMenuModel = {
+	items: [
+		{label: "About Nrby Photos...", command: 'do-nrbyAbout', shortcut: 'a'}/*,
+		{label: "Preferences", command: 'do-appPrefs', shortcut: 'p'},
+		{label: "Help", command: 'do-appHelp', shortcut: 'h'}*/
+	]
+};
+
+StageAssistant.prototype.handleCommand = function (event) {
+	if (event.type === Mojo.Event.commandEnable && 
+		(event.command === Mojo.Menu.helpCmd || event.command === Mojo.Menu.prefsCmd)) 
+	{
+		event.stopPropagation();
+    }
+    this.controller = Mojo.Controller.stageController.activeScene();
+    if (event.type === Mojo.Event.command) {
+		console.log("event.command=" + event.command);
+        switch (event.command) {
+        case 'do-nrbyAbout':
+			console.log("Chose About menu item");
+            this.controller.showAlertDialog({
+                onChoose: function (value) {},
+                title: "Nrby Photos " + Mojo.Controller.appInfo.version,
+                message: $L("Copyright 2010, Eamonn O'Brien-Strain"),
+                choices: [
+                    {label: $L("OK"), value: ""}
+                ]
+            });
+            break;
+        case 'palm-help-cmd':
+            //this.controller.pushScene("help");
+			Mojo.Controller.stageController.pushScene("help", this);
+            break;
+			
+        case 'palm-prefs-cmd':
+            //this.controller.pushScene("prefs");
+			Mojo.Controller.stageController.pushScene("prefs", this);
+            break;
+        }
+    }
+}; 

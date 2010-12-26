@@ -11,6 +11,7 @@
 
 /* declare globals to keep JSLint happy */
 var Mojo, $; //framework
+var StageAssistant; //other assistants
 var nrbyFlickrLicenses;
 
 /** @class The controller for the scene that shows information and
@@ -128,6 +129,8 @@ PhotoinfoAssistant.prototype.setup = function () {
 		downloadAndSetWallpaper(self.photos.urlsCenter()[1]);
 	}.bindAsEventListener(this);*/
 		
+	this.controller.setupWidget(Mojo.Menu.appMenu, {}, StageAssistant.prototype.appMenuModel); 
+
 	/* add event handlers to listen to events from widgets */
 	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap,   gotoPhotoPage);
 	//Mojo.Event.listen($('setWallpaper'),     Mojo.Event.tap,   setWallpaper);

@@ -27,5 +27,13 @@
     {
         "scenes": "webpage",
         "source": "app/assistants/webpage-assistant.js"
+    },
+    {
+        "scenes": "help",
+        "source": "app/assistants/help-assistant.js"
+    },
+    {
+        "scenes": "prefs",
+        "source": "app/assistants/prefs-assistant.js"
     }
 ]
