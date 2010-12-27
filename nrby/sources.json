@@ -1,43 +1,43 @@
 [
     {"source": "app/assistants/stage-assistant.js"},
     {
-        "scenes": "first",
-        "source": "app/models/initdata.js"
+        "source": "app/models/initdata.js",
+        "scenes": ["first", "photoinfo"]
     },
     {
-        "scenes": "first",
-        "source": "app/models/latlon.js"
+        "source": "app/models/latlon.js",
+        "scenes": ["first", "photoinfo"]
     },
     {
-        "scenes": "photoinfo",
-        "source": "app/models/licenses.js"
+        "source": "app/models/licenses.js",
+        "scenes": "photoinfo"
     },
     {
-        "scenes": "first",
-        "source": "app/models/photos.js"
+        "source": "app/models/photos.js",
+        "scenes": ["first", "photoinfo"]
     },
     {
-        "scenes": "first",
-        "source": "app/models/inactivity.js"
+        "source": "app/models/inactivity.js",
+        "scenes": ["first", "photoinfo"]
     },
     {
-        "scenes": "first",
-        "source": "app/assistants/first-assistant.js"
+        "source": "app/assistants/first-assistant.js",
+        "scenes": "first"
     },
     {
-        "scenes": "photoinfo",
-        "source": "app/assistants/photoinfo-assistant.js"
+        "source": "app/assistants/photoinfo-assistant.js",
+        "scenes": "photoinfo"
     },
     {
-        "scenes": "webpage",
-        "source": "app/assistants/webpage-assistant.js"
+        "source": "app/assistants/webpage-assistant.js",
+        "scenes": "webpage"
     },
     {
-        "scenes": "help",
-        "source": "app/assistants/help-assistant.js"
+        "source": "app/assistants/help-assistant.js",
+        "scenes": "help"
     },
     {
-        "scenes": "prefs",
-        "source": "app/assistants/prefs-assistant.js"
+        "source": "app/assistants/prefs-assistant.js",
+        "scenes": "prefs"
     }
 ]

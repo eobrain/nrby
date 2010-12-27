@@ -14,27 +14,28 @@ var Mojo, setInterval; //framework
 /** Keep track of user activity so that function can be executed when there is no activity 
 @class A function to be executed whenever there is a period of inactivity greater than delay milliseconds. */
 function Inactivity(delay) {
+	var self = this;
 
 	this.func = null;
 
 	setInterval(function () {
 		var now, func;
 		now =  new Date().getTime();
-		if (this.func !== null && now > Inactivity.lastActivity + delay) {
-			func = this.func;
+		if (self.func !== null && now > Inactivity.lastActivity + delay) {
+			func = self.func;
 			Mojo.requireFunction(func, 'setInterval func=' + func);
-			this.func = null;
+			self.func = null;
 			console.log("lastActivity         = " + Inactivity.lastActivity);
 			console.log("lastActivity + delay = " + (Inactivity.lastActivity + delay));
 			console.log("now                  = " + now);
 			console.log("Executing " + func);
 			func();
 		} else {
-			if (this.func !== null) {
-				console.log("Not executing " + this.func);
+			if (self.func !== null) {
+				console.log("Not executing " + self.func);
 			}
 		}
-	}.bind(this), delay / 2);
+	}, delay / 2);
 
 	this.waitingFunc = null;
 

@@ -22,6 +22,8 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 	   to the scene controller (this.controller) has not be established yet, so any initialization
 	   that needs the scene controller should be done in the setup function below. */
 
+	var self = this;
+
 	this.photos = photos;
 
 	this.repaint = function () {
@@ -43,16 +45,17 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 			console.log("FLICK LEFT");
 			goLeft();
 		}
-		this.repaint();
-	}.bind(this);
+		self.repaint();
+	}.bindAsEventListener(this);
 }
 
 
 
 PhotoinfoAssistant.prototype.setup = function () {
 	Inactivity.userActivity();
-	var controller, gotoPhotoPage, /*setWallpaper,*/ flickListener;
-
+	var self, controller;
+	
+	self = this;
     controller = this.controller;
 
 	/* this function is for setup tasks that have to happen when the scene is first created */
@@ -63,13 +66,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 	controller.setupWidget('gotoPhotoPage', {}, {label : "View on Flickr"});
 	//controller.setupWidget('setWallpaper',  {}, {label : "Set As Wallpaper"});
 
-	gotoPhotoPage = function (event) {
-		Inactivity.userActivity();
-		console.log("GOTO PHOTO PAGE BUTTON PRESSED");
-		Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
-	}.bindAsEventListener(this);	
-		
-
+	
 	/*function downloadAndSetWallpaper(url) {
 
 		console.log("DOWNLOADING " + url);
@@ -133,12 +130,18 @@ PhotoinfoAssistant.prototype.setup = function () {
 	this.controller.setupWidget(Mojo.Menu.appMenu, {}, StageAssistant.prototype.appMenuModel); 
 
 	/* add event handlers to listen to events from widgets */
-	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap,   gotoPhotoPage);
-	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap,   function () {
-		this.controller.stageController.popScene();
-	}.bind(this));
+	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap, function (event) {
+		Inactivity.userActivity();
+		console.log("GOTO PHOTO PAGE BUTTON PRESSED");
+		Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
+	}.bindAsEventListener(this));
+
+	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap,  function () {
+		self.controller.stageController.popScene();
+	});
+
 	//Mojo.Event.listen($('setWallpaper'),     Mojo.Event.tap,   setWallpaper);
-	Mojo.Event.listen($('infoBody'),      Mojo.Event.flick, this.flickListener.bindAsEventListener(this));
+	Mojo.Event.listen($('infoBody'),      Mojo.Event.flick, this.flickListener);
 };
 
 PhotoinfoAssistant.prototype.activate = function (event) {

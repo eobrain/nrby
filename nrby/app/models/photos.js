@@ -18,6 +18,7 @@ var nrbyInitData, LatLon, Inactivity; //model
    Initialize everything and display default built-in photos while waiting for the network.
    @class A list of photos returned by a Flickr search, with a pointer to
    a current photo that can be moved left or right
+   @constructor
   */
 function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledgement*/) {
     Mojo.requireProperty(status, ['set', 'reset']);
@@ -272,8 +273,8 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 
 	/** Make view in sync with model */
 	this.refreshPhotoView = function () {
-		showPhotos(this.urlsLeft(), this.urlsCenter(), this.urlsRight());
-	}.bind(this);
+		showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
+	};
 
 	/** get center photo 
        @type String */

@@ -15,13 +15,16 @@ var Photos, LatLon, Inactivity;  //models
 
 /** @class The controller for the main photo-display scene. */
 function FirstAssistant() {
+	var self = this;
+
+	this.viewer = $('ImageId');
 
 	HTMLElement.prototype.animateOpacity = function (handleOpacity) {
-		if (this.opacityAnimation) {
-			this.opacityAnimation.cancel();
+		if (self.opacityAnimation) {
+			self.opacityAnimation.cancel();
 		}
-		this.opacityAnimation = 
-		Mojo.Animation.animateValue(Mojo.Animation.queueForElement(this),
+		self.opacityAnimation = 
+		Mojo.Animation.animateValue(Mojo.Animation.queueForElement(self),
 									'linear', 
 									function (v) {
 										handleOpacity((100 - v) / 100.0);
@@ -32,15 +35,15 @@ function FirstAssistant() {
 
 
 	HTMLElement.prototype.fadeAway = function () {
-		this.animateOpacity(function (opacity) {
-			this.style.opacity = opacity;
-		}.bind(this));
+		self.animateOpacity(function (opacity) {
+			self.style.opacity = opacity;
+		});
 	};
 
 	HTMLElement.prototype.fadeAwayText = function () {
-		this.animateOpacity(function (opacity) {
-			this.style.color = "rgba(255,255,255," + opacity + ")";
-		}.bind(this));
+		self.animateOpacity(function (opacity) {
+			self.style.color = "rgba(255,255,255," + opacity + ")";
+		});
 	};
 
 
@@ -48,9 +51,8 @@ function FirstAssistant() {
 
 /** Handle the event of the user rotating the device, resizing the image viewer accordingly. */
 FirstAssistant.prototype.orientationChanged = function (orientation) {
-	Inactivity.userActivity();
+    var size, button;
 
-    var size, viewer, button;
     // you will be passed "left", "right", "up", or "down" (and maybe others?)
 	switch (orientation) {
 	case "up":   //normal portrait
@@ -66,6 +68,7 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 		return;
 	}
 
+
 	//Make viewer fill the screen
 	$('ImageId').mojo.manualSize(size[0], size[1]);
 
@@ -78,12 +81,11 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 FirstAssistant.prototype.setup = function () {
 	Inactivity.userActivity();
 
-    var assistant, viewerModel, wallpaperButtonModel,
-	viewer, appCtl, ctl, pushSceneListener;
+    var self, viewerModel, wallpaperButtonModel,
+	appCtl, ctl;
 
-	viewer = $('ImageId');
 
-	assistant = this; //for use in functions
+	self = this; //for use in functions
 
 	/** A display area used for brief status messages. */
 	this.status = {
@@ -106,13 +108,13 @@ FirstAssistant.prototype.setup = function () {
 	};
 
 	function goLeft() {
-		assistant.photos.moveLeft();
-		assistant.provideUrl(viewer.mojo.leftUrlProvided, assistant.photos.urlsLeft());
+		self.photos.moveLeft();
+		self.provideUrl(self.viewer.mojo.leftUrlProvided, self.photos.urlsLeft());
 	}
 
 	function goRight() {
-		assistant.photos.moveRight();
-		assistant.provideUrl(viewer.mojo.rightUrlProvided, assistant.photos.urlsRight());
+		self.photos.moveRight();
+		self.provideUrl(self.viewer.mojo.rightUrlProvided, self.photos.urlsRight());
 	}
 
 	viewerModel = {
@@ -120,11 +122,11 @@ FirstAssistant.prototype.setup = function () {
 		onLeftFunction : function (event) {
 			Inactivity.userActivity();
 			goLeft();
-	    }.bind(this),
+	    },
 		onRightFunction : function (event) {
 			Inactivity.userActivity();
 			goRight();
-	    }.bind(this)
+	    }
 	};
 
     wallpaperButtonModel = {
@@ -145,20 +147,20 @@ FirstAssistant.prototype.setup = function () {
 	}.bindAsEventListener(this);
 
 
-	pushSceneListener = function (event) {
+	this.pushSceneListener = function (event) {
 		Inactivity.userActivity();
 		Mojo.Controller.stageController.pushScene('photoinfo', this.photos, goLeft, goRight);
 	}.bindAsEventListener(this);	
 
-	Mojo.Event.listen(viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
-	Mojo.Event.listen(viewer, Mojo.Event.hold, pushSceneListener);
+	Mojo.Event.listen(this.viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
+	Mojo.Event.listen(this.viewer, Mojo.Event.tap, this.pushSceneListener);
 
 	this.controller.showAlertDialog({
 		onChoose: function (value) {
 			Inactivity.userActivity();
 		},
 		title: $L("How To use This App"),
-		message: $L("Flick sideways to change photos.  Double-tap to zoom.  Press-and-hold to see details about the photos."),
+		message: $L("Flick sideways to change photos.  Pinch out to zoom.  Tap to see information."),
 		choices: [
 			{label: $L("OK"), value: "cancel", type: 'dismiss'}    
 		]
@@ -170,7 +172,7 @@ FirstAssistant.prototype.setup = function () {
 /** Create the Photos model object, and start listening for GPS location events. */
 FirstAssistant.prototype.activate = function (event) {
 	Inactivity.userActivity();
-    var assistant, prevTime, viewer, //info,
+    var self, prevTime, 
 	    wallpaperButton, wallpaperButtonText;
 
 	console.log(">>> BEGIN first.activate -- this.activateDone=" + this.activateDone);
@@ -184,15 +186,14 @@ FirstAssistant.prototype.activate = function (event) {
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 
-	viewer = $('ImageId');
     wallpaperButton = $('wallpaperButton');
 	wallpaperButtonText = wallpaperButton.getElementsBySelector('.truncating-text')[0];
-	assistant = this; //for use in functions
+	self = this; //for use in functions
 
 	function showPhotos(urlsLeft, urlsCenter, urlsRight) {
-	    assistant.provideUrl(viewer.mojo.leftUrlProvided,   urlsLeft);
-		assistant.provideUrl(viewer.mojo.centerUrlProvided, urlsCenter);
-		assistant.provideUrl(viewer.mojo.rightUrlProvided,  urlsRight);
+	    self.provideUrl(self.viewer.mojo.leftUrlProvided,   urlsLeft);
+		self.provideUrl(self.viewer.mojo.centerUrlProvided, urlsCenter);
+		self.provideUrl(self.viewer.mojo.rightUrlProvided,  urlsRight);
 	}
 
 	this.stopListeningToWallpaperButton = function () { /* do nothing*/ };
@@ -245,8 +246,8 @@ FirstAssistant.prototype.activate = function (event) {
 			}
 			prevTime = now();
 
-			this.photos.fetch(latLon);
-		}.bind(this),
+			self.photos.fetch(latLon);
+		},
 	    onFailure: function (response) {
 		    showDialogBox("Problem calling Flickr", response);
 		}
@@ -267,7 +268,8 @@ FirstAssistant.prototype.deactivate = function (event) {
 FirstAssistant.prototype.cleanup = function (event) {
 	/* this function should do any cleanup needed before the scene is destroyed as 
 	   a result of being popped off the scene stack */
-	Mojo.Event.stopListening(this.controller.get('ImageId'), Mojo.Event.imageViewChanged, this.imageViewChanged);
+	Mojo.Event.stopListening(this.viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
+	Mojo.Event.stopListening(this.viewer, Mojo.Event.tap, this.pushSceneListener);
 };
 
 
