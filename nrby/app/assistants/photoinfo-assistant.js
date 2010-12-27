@@ -134,6 +134,9 @@ PhotoinfoAssistant.prototype.setup = function () {
 
 	/* add event handlers to listen to events from widgets */
 	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap,   gotoPhotoPage);
+	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap,   function () {
+		this.controller.stageController.popScene();
+	}.bind(this));
 	//Mojo.Event.listen($('setWallpaper'),     Mojo.Event.tap,   setWallpaper);
 	Mojo.Event.listen($('infoBody'),      Mojo.Event.flick, this.flickListener.bindAsEventListener(this));
 };
