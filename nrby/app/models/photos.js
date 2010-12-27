@@ -272,8 +272,8 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 
 	/** Make view in sync with model */
 	this.refreshPhotoView = function () {
-		showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
-	};
+		showPhotos(this.urlsLeft(), this.urlsCenter(), this.urlsRight());
+	}.bind(this);
 
 	/** get center photo 
        @type String */

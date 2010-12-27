@@ -21,7 +21,6 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 	   additional parameters (after the scene name) that were passed to pushScene. The reference
 	   to the scene controller (this.controller) has not be established yet, so any initialization
 	   that needs the scene controller should be done in the setup function below. */
-	var self = this;
 
 	this.photos = photos;
 
@@ -44,17 +43,16 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 			console.log("FLICK LEFT");
 			goLeft();
 		}
-		self.repaint();
-	};
+		this.repaint();
+	}.bind(this);
 }
 
 
 
 PhotoinfoAssistant.prototype.setup = function () {
 	Inactivity.userActivity();
-	var self, controller, gotoPhotoPage, /*setWallpaper,*/ flickListener;
+	var controller, gotoPhotoPage, /*setWallpaper,*/ flickListener;
 
-	self = this;
     controller = this.controller;
 
 	/* this function is for setup tasks that have to happen when the scene is first created */
@@ -68,7 +66,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 	gotoPhotoPage = function (event) {
 		Inactivity.userActivity();
 		console.log("GOTO PHOTO PAGE BUTTON PRESSED");
-		Mojo.Controller.stageController.pushScene('webpage', self.photos.center());
+		Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
 	}.bindAsEventListener(this);	
 		
 

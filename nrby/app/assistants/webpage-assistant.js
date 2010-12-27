@@ -25,9 +25,6 @@ function WebpageAssistant(photo) {
 
 WebpageAssistant.prototype.setup = function () {
 	Inactivity.userActivity();
-	var self;
-
-	self = this;
 
 	/* this function is for setup tasks that have to happen when the scene is first created */
 		
@@ -35,7 +32,7 @@ WebpageAssistant.prototype.setup = function () {
 	
 	/* setup widgets here */
 	this.controller.setupWidget("webpage", this.attributes = {
-		url:	self.photo.photoPage()
+		url:	this.photo.photoPage()
 	},
 	this.model = {}
 	);	

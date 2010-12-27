@@ -32,17 +32,15 @@ function FirstAssistant() {
 
 
 	HTMLElement.prototype.fadeAway = function () {
-		var self = this;
 		this.animateOpacity(function (opacity) {
-				self.style.opacity = opacity;
-			});
+			this.style.opacity = opacity;
+		}.bind(this));
 	};
 
 	HTMLElement.prototype.fadeAwayText = function () {
-		var self = this;
 		this.animateOpacity(function (opacity) {
-				self.style.color = "rgba(255,255,255," + opacity + ")";
-			});
+			this.style.color = "rgba(255,255,255," + opacity + ")";
+		}.bind(this));
 	};
 
 
@@ -85,7 +83,7 @@ FirstAssistant.prototype.setup = function () {
 
 	viewer = $('ImageId');
 
-	assistant = this; //for use in lambda functions
+	assistant = this; //for use in functions
 
 	/** A display area used for brief status messages. */
 	this.status = {
@@ -143,14 +141,14 @@ FirstAssistant.prototype.setup = function () {
 	by ImageViewer */
     this.imageViewChanged = function (event) {
 	    FirstAssistant.prototype.orientationChanged(appCtl.getScreenOrientation());
-		assistant.status.reset();
+		this.status.reset();
 	}.bindAsEventListener(this);
 
 
 	pushSceneListener = function (event) {
 		Inactivity.userActivity();
-		Mojo.Controller.stageController.pushScene('photoinfo', assistant.photos, goLeft, goRight);
-	}.bindAsEventListener(assistant);	
+		Mojo.Controller.stageController.pushScene('photoinfo', this.photos, goLeft, goRight);
+	}.bindAsEventListener(this);	
 
 	Mojo.Event.listen(viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
 	Mojo.Event.listen(viewer, Mojo.Event.hold, pushSceneListener);
@@ -189,7 +187,7 @@ FirstAssistant.prototype.activate = function (event) {
 	viewer = $('ImageId');
     wallpaperButton = $('wallpaperButton');
 	wallpaperButtonText = wallpaperButton.getElementsBySelector('.truncating-text')[0];
-	assistant = this; //for use in lambda functions
+	assistant = this; //for use in functions
 
 	function showPhotos(urlsLeft, urlsCenter, urlsRight) {
 	    assistant.provideUrl(viewer.mojo.leftUrlProvided,   urlsLeft);
@@ -247,8 +245,8 @@ FirstAssistant.prototype.activate = function (event) {
 			}
 			prevTime = now();
 
-			assistant.photos.fetch(latLon);
-		},
+			this.photos.fetch(latLon);
+		}.bind(this),
 	    onFailure: function (response) {
 		    showDialogBox("Problem calling Flickr", response);
 		}
