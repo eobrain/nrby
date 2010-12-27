@@ -12,7 +12,7 @@
 /* declare globals to keep JSLint happy */
 var Mojo, $; //framework
 var StageAssistant; //other assistants
-var nrbyFlickrLicenses;
+var nrbyFlickrLicenses, Inactivity;  //models;
 
 /** @class The controller for the scene that shows information and
 provides controls for a particular photo. */
@@ -36,6 +36,7 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 	this.repaint();
 
 	this.flickListener = function (event) {
+		Inactivity.userActivity();
 		if (event.velocity.x > 0) {
 			console.log("FLICK RIGHT");
 			goRight();
@@ -50,6 +51,7 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 
 
 PhotoinfoAssistant.prototype.setup = function () {
+	Inactivity.userActivity();
 	var self, controller, gotoPhotoPage, /*setWallpaper,*/ flickListener;
 
 	self = this;
@@ -64,6 +66,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 	//controller.setupWidget('setWallpaper',  {}, {label : "Set As Wallpaper"});
 
 	gotoPhotoPage = function (event) {
+		Inactivity.userActivity();
 		console.log("GOTO PHOTO PAGE BUTTON PRESSED");
 		Mojo.Controller.stageController.pushScene('webpage', self.photos.center());
 	}.bindAsEventListener(this);	
@@ -138,6 +141,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 };
 
 PhotoinfoAssistant.prototype.activate = function (event) {
+	Inactivity.userActivity();
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 };

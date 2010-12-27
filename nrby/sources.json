@@ -18,6 +18,10 @@
     },
     {
         "scenes": "first",
+        "source": "app/models/inactivity.js"
+    },
+    {
+        "scenes": "first",
         "source": "app/assistants/first-assistant.js"
     },
     {

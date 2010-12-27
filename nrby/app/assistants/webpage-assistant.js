@@ -12,6 +12,7 @@
 /* declare globals to keep JSLint happy */
 var Mojo, $L; //framework
 var StageAssistant; //other assistants
+var Inactivity;  //models
 
 /** @class View the web page for this photo on Flickr */
 function WebpageAssistant(photo) {
@@ -23,6 +24,7 @@ function WebpageAssistant(photo) {
 }
 
 WebpageAssistant.prototype.setup = function () {
+	Inactivity.userActivity();
 	var self;
 
 	self = this;
@@ -42,6 +44,7 @@ WebpageAssistant.prototype.setup = function () {
 };
 
 WebpageAssistant.prototype.activate = function (event) {
+	Inactivity.userActivity();
 	/* put in event handlers here that should only be in effect when this scene is active. For
 	   example, key handlers that are observing the document */
 };

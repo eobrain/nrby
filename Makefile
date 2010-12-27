@@ -19,7 +19,7 @@ ID=$(ORG).$(NAME)
 JSLINT=java -classpath build/js.jar org.mozilla.javascript.tools.shell.Main build/jslint.js
 JSDOC=java -jar jsdoc-toolkit/jsrun.jar jsdoc-toolkit/app/run.js -t=jsdoc-toolkit/templates/jsdoc
 
-run: install doc
+run: install doc test
 	palm-launch -c $(ID)
 	palm-launch $(ID)
 

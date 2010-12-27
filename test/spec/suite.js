@@ -32,13 +32,13 @@ describe('Photos', function () {
 
     it('can be instantiated', function () {
 		var photos;
-		photos = new Photos(status, info, alertUserStub, showPhotosStub);
+		photos = new Photos(status, alertUserStub, showPhotosStub);
 		expect(photos.urlsCenter().length).toEqual(2);
     });
 
     it('can have their index moved', function () {
 		var photos, url1, url2;
-		photos = new Photos(status, info, alertUserStub, showPhotosStub);
+		photos = new Photos(status, alertUserStub, showPhotosStub);
 		url1 = photos.urlsCenter()[0];
 		url2 = photos.urlsRight()[0];
 		expect(url1).toNotEqual(url2);
@@ -54,7 +54,7 @@ describe('Photos', function () {
 
     it('has a center photo', function () {
 		var photos, photo;
-		photos = new Photos(status, info, alertUserStub, showPhotosStub);
+		photos = new Photos(status, alertUserStub, showPhotosStub);
 		photo = photos.center();
 		expect(photo.title).toEqual("San Francisco drops away behind us.");
 	});
@@ -71,7 +71,7 @@ describe('Photo', function () {
 
 	function showPhotosStub(left, center, middle) {}
 
-	photos = new Photos(status, info, alertUserStub, showPhotosStub);
+	photos = new Photos(status, alertUserStub, showPhotosStub);
 
     it('has title', function () {
 		var photo = photos.center();

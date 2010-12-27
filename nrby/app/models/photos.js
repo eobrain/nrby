@@ -10,7 +10,7 @@
 /*jslint devel: true */
 /* declare globals to keep JSLint happy */
 var Ajax, Mojo;   //framework
-var nrbyInitData, LatLon; //model
+var nrbyInitData, LatLon, Inactivity; //model
 
 
 
@@ -19,20 +19,20 @@ var nrbyInitData, LatLon; //model
    @class A list of photos returned by a Flickr search, with a pointer to
    a current photo that can be moved left or right
   */
-function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
+function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledgement*/) {
     Mojo.requireProperty(status, ['set', 'reset']);
-    Mojo.requireProperty(info, 'set');
-	Mojo.requireFunction(alertUser);
-	Mojo.requireFunction(showPhotos);
-	Mojo.requireFunction(callAfterAcknowledgement);
-
+	Mojo.requireFunction(alertUser,                'alertUser');
+	Mojo.requireFunction(showPhotos,               'showPhotos');
 
 	var MILE, FOOT, MAX_AREA, IDEAL_PHOTO_COUNT,
 	    self, index, array, placeName, searchArea, noNearbyPhotos, density,
+	refreshInactivity,
 	  currentLatLon, prevLatLon, flickrResponse, goodNumberOfPhotos;
     self = this;
 
 	/* begin private members */
+
+	refreshInactivity = new Inactivity(10000);
 
 	IDEAL_PHOTO_COUNT = 200;
 	MAX_AREA = 32000 * 32000;  //m^2
@@ -49,7 +49,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	prevLatLon = null;
 	currentLatLon = null;
 
-	/** this funtion is actually attached to a Photo object --  get photo page of photo 
+	/** this function is actually attached to a Photo object --  get photo page of photo 
        @type String */
 	function photoPage() {
 		return "http://www.flickr.com/photos/" + this.owner + "/" + this.id + "/";
@@ -212,8 +212,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 		} else if (n > 0 && !isEqual(response.photos.photo, flickrResponse.photos.photo)) {
 		    //photos have changes
 		    flickrResponse = response;
-		    console.log("After button press should expose " + flickrResponse.photos.photo[0].title);
-			callAfterAcknowledgement("New photos are available", function () {
+			refreshInactivity.execWhenInactive(function () {
 				exposePhotos(flickrResponse.photos.photo);
 			});
 		}
@@ -225,7 +224,6 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
 		'&api_key=' + Mojo.Controller.appInfo.flickrApiKey +
 		'&' + args + '&format=json&nojsoncallback=1';
-		//console.log("FLICKR URL " + url);
 		status.set(message + '...');
 		req = new Ajax.Request(url, {
 		    method: 'get',
@@ -266,9 +264,7 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	function urls(i) {
 	    var photo, result;
         photo = array[i];
-		//console.log("i=" + i + ",photo=" + photo.title);
 	    result = [photo.url_t, photo.url_m];
-		//console.log("urls(" + i + ") returns " + result);
 		return result;
 	}
 
@@ -277,21 +273,6 @@ function Photos(status, info, alertUser, showPhotos, callAfterAcknowledgement) {
 	/** Make view in sync with model */
 	this.refreshPhotoView = function () {
 		showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
-		self.showInfo();
-	};
-
-	/** Display title on URL on the info object.
-	 @type void */
-	this.showInfo = function () {
-	    var photo, title, photoLatLon;
-	    photo = array[index];
-	    photoLatLon = new LatLon(photo.latitude, photo.longitude);
-		title = "";
-		if (currentLatLon !== null) {
-		    title += metersMsg(currentLatLon.metersFrom(photoLatLon)) + " " + currentLatLon.directionTo(photoLatLon) + " ";
-		}
-		title += "\"" + photo.title + "\"";
-		info.set(title, "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/");
 	};
 
 	/** get center photo 
