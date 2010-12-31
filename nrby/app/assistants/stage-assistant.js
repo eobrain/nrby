@@ -10,6 +10,7 @@
 /*jslint devel: true */
 /* declare globals to keep JSLint happy */
 var Mojo, $L; //framework
+var Inactivity, nrbyPreferences;	 //models
 
 /** @class The only stage in this app (containing a single scene). */
 function StageAssistant() {
@@ -30,15 +31,20 @@ StageAssistant.prototype.setup = function () {
 
 StageAssistant.prototype.appMenuModel = {
 	items: [
-		{label: "About Nrby Photos...", command: 'do-nrbyAbout', shortcut: 'a'}/*,
-		{label: "Preferences", command: 'do-appPrefs', shortcut: 'p'},
-		{label: "Help", command: 'do-appHelp', shortcut: 'h'}*/
+		
+		{label: "About Nrby Photos...", command: 'do-nrbyAbout', shortcut: 'a'},
+		{label: "Preferences ...", items: [
+			{label: "Get Recent Photos", command: 'do-recently'}
+		]}
+		//{label: "Preferences", command: 'do-appPrefs', shortcut: 'p'},
+		//{label: "Help", command: 'do-appHelp', shortcut: 'h'}
 	]
 };
 
 StageAssistant.prototype.handleCommand = function (event) {
+	Inactivity.userActivity();
 	if (event.type === Mojo.Event.commandEnable && 
-		(event.command === Mojo.Menu.helpCmd || event.command === Mojo.Menu.prefsCmd)) 
+		(event.command === Mojo.Menu.helpCmd /*|| event.command === Mojo.Menu.prefsCmd*/)) 
 	{
 		event.stopPropagation();
     }
@@ -46,6 +52,18 @@ StageAssistant.prototype.handleCommand = function (event) {
     if (event.type === Mojo.Event.command) {
 		console.log("event.command=" + event.command);
         switch (event.command) {
+        case 'do-recently':
+			console.log("Chose Preferences ... Get Recent Photos menu item");
+			StageAssistant.prototype.appMenuModel.items[1].items[0] = 
+				{label: "Get Interesting Photos", command: 'do-interesting'};
+			nrbyPreferences.recently = true;
+			break;
+        case 'do-recently':
+			console.log("Chose Preferences ... Get Recent Photos menu item");
+			StageAssistant.prototype.appMenuModel.items[1].items[0] = 
+				{label: "Get Recent Photos", command: 'do-recently'};
+			nrbyPreferences.recently = false;
+			break;
         case 'do-nrbyAbout':
 			console.log("Chose About menu item");
             this.controller.showAlertDialog({
@@ -62,10 +80,10 @@ StageAssistant.prototype.handleCommand = function (event) {
 			Mojo.Controller.stageController.pushScene("help", this);
             break;
 			
-        case 'palm-prefs-cmd':
+        /*case 'palm-prefs-cmd':
             //this.controller.pushScene("prefs");
 			Mojo.Controller.stageController.pushScene("prefs", this);
-            break;
+            break;*/
         }
     }
 }; 

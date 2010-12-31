@@ -10,8 +10,9 @@
 /*jslint devel: true */
 /* declare globals to keep JSLint happy */
 var setTimeout;
+var Mojo;
 var describe, it, expect, spyOn, jasmine, runs, waits;  //jasmine test framework  
-var Photos, LatLon, nrbyFlickrLicenses, Inactivity, Mojo; //code being tested
+var Photos, LatLon, nrbyFlickrLicenses, Inactivity, nrbyPreferences; //code being tested
 
 describe('Photos', function () {
 	var alertMsg, statusMsg, showPhotosCalled, info, status;
@@ -21,6 +22,29 @@ describe('Photos', function () {
 	Mojo   = jasmine.createSpyObj('Mojo', ['requireProperty', 'requireFunction']);
 	status = jasmine.createSpyObj('Status', ['set', 'reset']);
 	info   = jasmine.createSpyObj('Status', ['set']);
+
+	//mock Depot
+	/*Mojo.Depot = Class.create({
+
+		data: {},
+
+		initialize: function (options, onSuccess, onFailure) {
+			onSuccess();
+		},
+
+		add: function (key, value, onS, onF) {
+			console.log("add(" + key + "," + value + "," + onS + "," + onF + ")");
+			this.data[key] = value;
+			onS();
+		},
+
+		get: function (key, onS, onF) {
+			console.log("get(" + key + "," + onS + "," + onF + ") onS(" + this.data[key] + ")");
+			var result = this.data[key];
+			onS(result === undefined ? null : result);
+		}
+
+	});*/
 	
 	function alertUserStub(message) {
 	    alertMsg = message;
@@ -221,6 +245,50 @@ describe('Licenses', function () {
 	});
 
 });
+
+/*describe('nrbyPreferences', function () {
+
+	it('can get and set values', function () {
+		var db, actual, self;
+		self = this;
+		db = new NrbyPreferences();
+		this.actual = "original";
+
+		runs(function () {
+			db.put("testFoo", "foofoo");
+		});
+		waits(100);
+		runs(function () {
+			db.get("testFoo", "default", function (value) {
+				console.log("testFoo:  self.actual = " + value);
+				self.actual = value;
+			});
+		});
+		waits(100);
+		runs(function () {
+			expect(self.actual).toEqual("foofoo");
+		});
+	});
+
+	it('returns default value when nothing set', function () {
+		var db, actual, self;
+		self = this;
+		db = new NrbyPreferences();
+		this.actual = "original";
+
+		runs(function () {
+			db.get("testNoSuch", "defaultNoSuch", function (value) {
+				console.log("testNoSuch: self.actual = " + value);
+				self.actual = value;
+			});
+		});
+		waits(10);
+		runs(function () {
+			expect(self.actual).toEqual("defaultNoSuch");
+		});
+	});
+
+});*/
 
 describe('Inactivity', function () {
 

@@ -17,6 +17,10 @@
         "scenes": ["first", "photoinfo"]
     },
     {
+        "source": "app/models/preferences.js",
+        "scenes": ["first", "photoinfo", "prefs"]
+    },
+    {
         "source": "app/models/inactivity.js",
         "scenes": ["first", "photoinfo"]
     },
@@ -35,9 +39,5 @@
     {
         "source": "app/assistants/help-assistant.js",
         "scenes": "help"
-    },
-    {
-        "source": "app/assistants/prefs-assistant.js",
-        "scenes": "prefs"
     }
 ]

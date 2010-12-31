@@ -25,3 +25,7 @@
 	background: url(../images/my-scene-fade-bottom.png) bottom center repeat-x;
 	-webkit-palm-mouse-target: ignore;
 }
+
+.nrby-radio {
+    width: 20px;
+}
