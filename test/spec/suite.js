@@ -222,6 +222,37 @@ describe('LatLon', function () {
 
 });
 
+describe('Number', function () {
+
+	var region = null;
+	Mojo.Locale = {
+		getCurrentFormatRegion: function () {
+			return region;
+		}
+	};
+
+	it('converts from metres to locale-specific string', function () {
+		region = "ie";
+		expect((100).metersLocalized()).toEqual("100 m");
+		expect((30.48).metersLocalized()).toEqual("30 m");
+		expect((30).metersLocalized()).toEqual("30 m");
+		expect((1000).metersLocalized()).toEqual("1 km");
+		expect((1609).metersLocalized()).toEqual("1.6 km");
+		expect((1609.344).metersLocalized()).toEqual("1.6 km");
+	});
+
+	it('converts from metres to non-metric units in the USA', function () {
+		region = "us";
+		expect((100).metersLocalized()).toEqual("330 ft");
+		expect((30.48).metersLocalized()).toEqual("100 ft");
+		expect((30).metersLocalized()).toEqual("98 ft");
+		expect((1000).metersLocalized()).toEqual("0.6 mi");
+		expect((1609).metersLocalized()).toEqual("1 mi");
+		expect((1609.344).metersLocalized()).toEqual("1 mi");
+	});
+
+});
+
 describe('Licenses', function () {
 
 	it('includes all-rights-reserved license', function () {

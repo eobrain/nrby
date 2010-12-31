@@ -12,7 +12,7 @@
 /* declare globals to keep JSLint happy */
 var Mojo, $; //framework
 var StageAssistant; //other assistants
-var nrbyFlickrLicenses, Inactivity;  //models;
+var nrbyFlickrLicenses, Inactivity, LatLon;  //models;
 
 /** @class The controller for the scene that shows information and
 provides controls for a particular photo. */
@@ -27,11 +27,28 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 	this.photos = photos;
 
 	this.repaint = function () {
-		var photo = photos.center();
+		var photo, photoLatLon, distance, direction, license, mapUrl, hereQuery, photoLatLonQuery;
+		photo = photos.center();
+		photoLatLon = new LatLon(photo.latitude, photo.longitude);
+		photoLatLonQuery = photoLatLon.queryString();
+		mapUrl = 'http://maps.google.com/maps/api/staticmap?size=300x300&language=' +
+			Mojo.Locale.getCurrentLocale() + '&maptype=hybrid&markers=color:0xFF0000|' + photoLatLonQuery + '&sensor=true';
+		if (photos.latLon) {
+			distance  = photos.latLon.metersFrom(photoLatLon);
+			direction = photos.latLon.directionTo(photoLatLon);
+			$('where').update(distance.metersLocalized() + ' ' + direction);
+			hereQuery = photos.latLon.queryString();
+			mapUrl += '&center=' + hereQuery + '&path=color:0xFF0000|' + hereQuery + '|' + photoLatLonQuery;		
+		}
+
 		$('infoTitle').update(photo.title);
 		$('infoThumb').setAttribute('src', photo.url_t);
+		$('infoMap').setAttribute('src', mapUrl);
 		$('author').update('Copyright ' + photo.ownername);
-		$('license').update('(' + nrbyFlickrLicenses[photo.license].name + ')');
+		license = nrbyFlickrLicenses[photo.license];
+		if (license) {
+			$('license').update('(' + license.name + ')');
+		}
 		photos.refreshPhotoView();
 	};
 	this.repaint();
@@ -134,6 +151,39 @@ PhotoinfoAssistant.prototype.setup = function () {
 		Inactivity.userActivity();
 		console.log("GOTO PHOTO PAGE BUTTON PRESSED");
 		Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
+	}.bindAsEventListener(this));
+	Mojo.Event.listen($('infoMap'), Mojo.Event.tap, function (event) {
+		var photo, photoLatLon, mapQuery, loc;
+		photo = self.photos.center();
+		photoLatLon = new LatLon(photo.latitude, photo.longitude);
+		Inactivity.userActivity();
+		console.log("GOTO MAP BUTTON PRESSED");
+		//if (self.photos.latLon) {
+		//mapQuery = 'from ' + self.photos.latLon.queryString() + ' to ' + photoLatLon.queryString() + '(' + photo.title + ')';  //TODO percent-encode to escape parens
+		//} else {
+		//pQuery = photo.title + '@' +  photoLatLon.queryString() ;  //TODO percent-encode to escape parens
+		mapQuery =  photoLatLon.queryString() + '(' + photo.title + ')';
+		//}
+		console.log("MAP QUERY >>>>>>> " + mapQuery);
+		loc = photoLatLon.gmapLocation();
+		loc.age = 10;
+		if (self.photos.latLon) {
+			loc.acc = self.photos.latLon.metersFrom(photoLatLon);
+		} 
+		self.controller.serviceRequest("palm://com.palm.applicationManager", {
+			method: "open",
+			parameters: {
+				id: "com.palm.app.maps",
+				params: {
+					location: loc,
+					query: mapQuery
+				}
+			}
+		});
+		/*this.controller.serviceRequest("palm://com.palm.applicationManager", {
+			method: "open",
+			parameters: {target: "maploc:" + photoLatLon.queryString()}
+		});*/
 	}.bindAsEventListener(this));
 
 	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap,  function () {
