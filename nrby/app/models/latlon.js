@@ -8,6 +8,8 @@
  */
 
 /*jslint devel: true */
+/* declare globals to keep JSLint happy */
+var Mojo;   //framework
 
 /** Create from latitude and longitude (in degrees)
 @class A point on the surface of the Earth */
@@ -63,3 +65,34 @@ LatLon.prototype.EARTH_RADIUS  = 6367500; // meters
 LatLon.prototype.CIRCLE = 2 * Math.PI;
 LatLon.prototype.CIRCLE_8th    = Math.PI / 4;
 LatLon.prototype.DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+
+Number.MILE = 1609.344;
+Number.FOOT = 0.3048;
+
+/** Convert a number representing a distance in meters to a localized string */
+Number.prototype.metersLocalized = function () {
+
+	function twoSignificant(r) {
+	    var mult = 1;
+		while (r >= 100) {
+		    r /= 10;
+			mult *= 10;
+		}
+		return mult * Math.round(r);
+	}
+
+
+	if (Mojo.Locale.getCurrentFormatRegion() === 'us') {
+		if (this < 500 * Number.FOOT) {
+			return twoSignificant(this / Number.FOOT) + " ft";
+		} else {
+			return (twoSignificant(10 * this / Number.MILE) / 10) + " mi";
+		}		
+	} else {
+		if (this < 400) {
+			return twoSignificant(this) + " m";
+		} else {
+			return (twoSignificant(this / 100) / 10) + " km";
+		}
+	}
+};

@@ -25,10 +25,10 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 	Mojo.requireFunction(alertUser,                'alertUser');
 	Mojo.requireFunction(showPhotos,               'showPhotos');
 
-	var MILE, FOOT, MAX_AREA, IDEAL_PHOTO_COUNT,
+	var MAX_AREA, IDEAL_PHOTO_COUNT,
 	    self, index, array, placeName, searchArea, noNearbyPhotos, density,
 	refreshInactivity,
-	  currentLatLon, prevLatLon, flickrResponse, goodNumberOfPhotos;
+	  currentLatLon, flickrResponse, goodNumberOfPhotos;
     self = this;
 
 	/* begin private members */
@@ -37,8 +37,6 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 
 	IDEAL_PHOTO_COUNT = 200;
 	MAX_AREA = 32000 * 32000;  //m^2
-	MILE = 1609.344;
-    FOOT = 0.3048;
 
     searchArea = MAX_AREA; //m^2
 	density = IDEAL_PHOTO_COUNT / MAX_AREA;
@@ -47,7 +45,6 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
     index = -1;
 	array = [];
 	placeName = "";
-	prevLatLon = null;
 	currentLatLon = null;
 
 	/** this function is actually attached to a Photo object --  get photo page of photo 
@@ -87,33 +84,8 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 	}
 
 
-	function twoSignificant(r) {
-	    var mult = 1;
-		while (r >= 100) {
-		    r /= 10;
-			mult *= 10;
-		}
-		return mult * Math.round(r);
-	}
-
-	function metersMsg(r) {
-	    if (Mojo.Locale.getCurrentFormatRegion() === 'us') {
-			if (r < 500 * FOOT) {
-				return twoSignificant(r / FOOT) + " ft";
-			} else {
-			    return (twoSignificant(10 * r / MILE) / 10) + " mi";
-			}		
-		} else {
-			if (r < 400) {
-				return twoSignificant(r) + " m";
-			} else {
-			    return (twoSignificant(r / 100) / 10) + " km";
-			}
-		}
-	}
-
 	function radiusMsg() {
-	    return metersMsg(Math.sqrt(searchArea));
+	    return Math.sqrt(searchArea).metersLocalized();
 	}
 
 	function isEqual(a, b) {
@@ -316,22 +288,25 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 		return urls(rightIndex());
 	};
 
+	/** The geographical position of the device when these photos were fetched */
+	this.latLon = null;
+
 	/** fetch new photos by doing a Flickr search
 	 @type void */
 	this.fetch = function (latLon) {
 	    var radius, distanceMoved, movedMessage, flickrArgs;
 		currentLatLon = latLon;
-		if (prevLatLon === null) {
+		if (self.latLon === null) {
 		    distanceMoved = null;
 			movedMessage = 'Searching for nearby photos';
 		} else {
-		    distanceMoved = latLon.metersFrom(prevLatLon);
+		    distanceMoved = latLon.metersFrom(self.latLon);
 			if (distanceMoved > 0) {
-				console.log("Moved " + distanceMoved + " meters " + prevLatLon.directionTo(latLon));
+				console.log("Moved " + distanceMoved + " meters " + self.latLon.directionTo(latLon));
 			}
 			if (distanceMoved > Math.sqrt(searchArea) / 10) {
 			    movedMessage = 'Searching. You have moved ' + 
-				                metersMsg(distanceMoved) + ' ' + prevLatLon.directionTo(latLon);
+				    distanceMoved.metersLocalized() + ' ' + self.latLon.directionTo(latLon);
 			} else {
 			    movedMessage = null;
 			}
@@ -359,7 +334,7 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 				setPhotos
 			);
 		}
-		prevLatLon = latLon;
+		self.latLon = latLon;
 	};
 
 	setPhotos(nrbyInitData);

@@ -12,7 +12,7 @@
 /* declare globals to keep JSLint happy */
 var Mojo, $; //framework
 var StageAssistant; //other assistants
-var nrbyFlickrLicenses, Inactivity;  //models;
+var nrbyFlickrLicenses, Inactivity, LatLon;  //models;
 
 /** @class The controller for the scene that shows information and
 provides controls for a particular photo. */
@@ -27,11 +27,17 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 	this.photos = photos;
 
 	this.repaint = function () {
-		var photo = photos.center();
+		var photo, photoLatLon, distance, direction;
+		photo = photos.center();
+		photoLatLon = new LatLon(photo.latitude, photo.longitude);
+		distance  = photos.latLon.metersFrom(photoLatLon);
+		direction = photos.latLon.directionTo(photoLatLon);
+
 		$('infoTitle').update(photo.title);
 		$('infoThumb').setAttribute('src', photo.url_t);
 		$('author').update('Copyright ' + photo.ownername);
 		$('license').update('(' + nrbyFlickrLicenses[photo.license].name + ')');
+		$('where').update(distance.metersLocalized() + ' ' + direction);
 		photos.refreshPhotoView();
 	};
 	this.repaint();
