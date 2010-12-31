@@ -44,6 +44,25 @@ function LatLon(latDeg, lonDeg) {
 		return Math.atan2(y, x);
     }
 
+	/** lat/lon span in degrees to pass in as spn= parameter to google maps */
+	this.span = function (that) {
+		var thatLatDeg, thatLonDeg;
+		//Use manhattan degrees
+		thatLatDeg = that.lat / this.RADIANS_PER_DEGREE;
+		thatLonDeg = that.lon / this.RADIANS_PER_DEGREE;
+		return (latDeg - thatLatDeg) + (lonDeg - thatLonDeg);
+	};
+
+	/** return a location object suitable for passing to the maps app */
+	this.gmapLocation = function () {
+		return {lat: latDeg, lng: lonDeg, acc: 30};
+	};
+
+	/** return a lat,lon string in degrees (e.g. to use in a google map query) */
+	this.queryString = function () {
+		return latDeg + "," + lonDeg;
+	};
+
     /** @returns direction to another point, symbolically ('N', 'NE', 'E', ... )
 	@type String */
     this.directionTo = function (that) {
