@@ -49,7 +49,7 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 		$('date').update(Mojo.Format.formatRelativeDate(photo.datetaken.parseFlickrDate(), "default"));
 		license = nrbyFlickrLicenses[photo.license];
 		if (license) {
-			$('license').update('(' + license.name + ')');
+			$('license').update(license.name);
 		}
 		photos.refreshPhotoView();
 	};
@@ -149,7 +149,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
 
 	/* add event handlers to listen to events from widgets */
-	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap, function (event) {
+	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap, function (event) {
 		Inactivity.userActivity();
 		console.log("GOTO PHOTO PAGE TAPPED");
 		Mojo.Controller.stageController.pushScene('webpage', this.photos.center());

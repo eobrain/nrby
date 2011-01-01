@@ -30,14 +30,3 @@ function NrbyPreferences() {
 }
 
 var nrbyPreferences = new NrbyPreferences();
-
-/*{
-	recently: false,
-
-	recentlyHook: function (v) {},
-
-	setRecently: function (v) {
-		this.recently = v;
-		this.recentlyHook(this.recently);
-	}
-};*/

@@ -5,7 +5,9 @@
 #wallpaperButton {position:absolute; left:0; z-index:99999;display:none;}
 #infoTitle {overflow:hidden;}
 #infoBody {margin-top:65px; text-align:center;}
-#infoThumb {float:left;}
+#infoThumb {float:right; margin:3px;}
+.clearfloat {clear:both;}
+#infoGroup {text-align: left;}
 
 .my-scene-fade-top {
 	position: fixed; 
@@ -13,7 +15,7 @@
 	z-index: 100000;
 	height: 54px; 
 	width: 100%;
-	background: url(../images/my-scene-fade-top.png) top center repeat-x;
+	background: url(../images/my-scene-fade-top-dark.png) top center repeat-x;
 	-webkit-palm-mouse-target: ignore;
 }
 .my-scene-fade-bottom {
@@ -22,7 +24,7 @@
 	z-index: 100000;
 	height: 54px; 
 	width: 100%;
-	background: url(../images/my-scene-fade-bottom.png) bottom center repeat-x;
+	background: url(../images/my-scene-fade-bottom-dark.png) bottom center repeat-x;
 	-webkit-palm-mouse-target: ignore;
 }
 
