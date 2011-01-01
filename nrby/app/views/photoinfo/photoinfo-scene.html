@@ -2,11 +2,16 @@
 <div class="palm-body-text">
   <div id="infoTitle" class="palm-header">----</div>
   <div id="infoBody">
-    <div x-mojo-element="Button" id="gotoPhotoPage"></div>
+    <!--div x-mojo-element="Button" id="gotoPhotoPage"></div-->
     <!--div x-mojo-element="Button" id="setWallpaper"></div-->
-    <img id="infoThumb"/>
-    Copyright <span id="date"></span> <span id="author"></span> <span id="license"></span>
-    <img id="infoMap" width="300" height="300"/>
+    <div id="gotoPhotoPage" class="palm-group unlabeled">
+      <img id="infoThumb"/>
+      Copyright <span id="author"></span>
+      <div id="license"></div>
+      <div id="date"></div>
+      <div> </div>
+    </div>
+    <img id="infoMap" width="300" height="200"/>
     <div id="where"></div>
   </div>
 </div>

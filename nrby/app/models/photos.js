@@ -330,7 +330,7 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 		} else {
 			//Normal case
 			radius = radiusKm();
-			sort = nrbyPreferences.recently ? "sort=date-taken-desc" : "sort=interestingness-desc";
+			sort = nrbyPreferences.recently ? "sort=date-posted-desc" : "sort=interestingness-desc";
 			console.log("RECENTLY = " + nrbyPreferences.recently + " so using " + sort);
 			//self.db.get("recently", false, function (recently) {
 			callFlickr(
@@ -348,6 +348,33 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 
 	setPhotos(nrbyInitData);
 }
+
+/** Parse a timestamp of the form  "YYYY-MM-DD hh:mm:ss" and return a Date object */
+String.prototype.parseFlickrDate = function () {
+	console.log("##### parseFlickrDate(" + this + ')');
+	var dateTime, date, time,
+	    year, month, day, hour, min, sec;
+	dateTime = this.split(' ');
+	console.log("##### dateTime=" + dateTime);
+	date = dateTime[0].split('-');
+	time = dateTime[1].split(':');
+	console.log("##### date=" + date);
+	console.log("##### time=" + time);
+	year =  parseInt(date[0], 10);
+	month = parseInt(date[1], 10) - 1;
+	day =   parseInt(date[2], 10);
+	hour =  parseInt(time[0], 10);
+	min =   parseInt(time[1], 10);
+	sec =   parseInt(time[2], 10);
+	console.log("##### =year=" + year);
+	console.log("##### =month=" + month);
+	console.log("##### =day=" + day);
+	console.log("##### =hour=" + hour);
+	console.log("##### =min=" + min);
+	console.log("##### =sec=" + sec);
+	return new Date(year, month, day, hour, min, sec);
+};
+
 
 
 /* * get photo page of photo 

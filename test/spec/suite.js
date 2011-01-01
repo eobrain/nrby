@@ -108,6 +108,20 @@ describe('Photo', function () {
 	});
 });
 
+describe('Photo.parseFlickrDate', function () {
+    it('can parse a date', function () {
+		var date = "2010-12-31 20:17:30".parseFlickrDate();
+		expect(date.getFullYear()).toEqual(2010);
+		expect(date.getMonth()).toEqual(12 - 1);
+		expect(date.getDate()).toEqual(31);
+		expect(date.getDay()).toEqual(5); //Friday
+		expect(date.getHours()).toEqual(20);
+		expect(date.getMinutes()).toEqual(17);
+		expect(date.getSeconds()).toEqual(30);
+		expect(date.getMilliseconds()).toEqual(0);
+	});
+});
+
 describe('LatLon', function () {
 
 	function diff(a, b) {
@@ -276,50 +290,6 @@ describe('Licenses', function () {
 	});
 
 });
-
-/*describe('nrbyPreferences', function () {
-
-	it('can get and set values', function () {
-		var db, actual, self;
-		self = this;
-		db = new NrbyPreferences();
-		this.actual = "original";
-
-		runs(function () {
-			db.put("testFoo", "foofoo");
-		});
-		waits(100);
-		runs(function () {
-			db.get("testFoo", "default", function (value) {
-				console.log("testFoo:  self.actual = " + value);
-				self.actual = value;
-			});
-		});
-		waits(100);
-		runs(function () {
-			expect(self.actual).toEqual("foofoo");
-		});
-	});
-
-	it('returns default value when nothing set', function () {
-		var db, actual, self;
-		self = this;
-		db = new NrbyPreferences();
-		this.actual = "original";
-
-		runs(function () {
-			db.get("testNoSuch", "defaultNoSuch", function (value) {
-				console.log("testNoSuch: self.actual = " + value);
-				self.actual = value;
-			});
-		});
-		waits(10);
-		runs(function () {
-			expect(self.actual).toEqual("defaultNoSuch");
-		});
-	});
-
-});*/
 
 describe('Inactivity', function () {
 

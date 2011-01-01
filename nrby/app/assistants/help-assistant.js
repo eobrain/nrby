@@ -10,7 +10,7 @@
 /*jslint devel: true */
 
 /* declare globals to keep JSLint happy */
-var Mojo;
+var Mojo, $L;
 var StageAssistant;
 var Inactivity;  //models
 
@@ -31,6 +31,21 @@ HelpAssistant.prototype.setup = function () {
 	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
 	
 	/* add event handlers to listen to events from widgets */
+
+	if (HelpAssistant.dialogShown !== true) {
+		this.controller.showAlertDialog({
+			onChoose: function (value) {
+				Inactivity.userActivity();
+			},
+			title: $L("Help"),
+			message: $L("Do back gesture below screen to go back."),
+			choices: [
+				{label: $L("OK"), value: "cancel", type: 'dismiss'}    
+			]
+		});
+		HelpAssistant.dialogShown = true;
+	}
+
 };
 
 HelpAssistant.prototype.activate = function (event) {

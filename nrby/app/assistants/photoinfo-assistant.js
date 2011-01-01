@@ -10,7 +10,7 @@
 /*jslint devel: true */
 
 /* declare globals to keep JSLint happy */
-var Mojo, $; //framework
+var Mojo, $, $L; //framework
 var StageAssistant; //other assistants
 var nrbyFlickrLicenses, Inactivity, LatLon;  //models;
 
@@ -24,6 +24,7 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 
 	var self = this;
 
+
 	this.photos = photos;
 
 	this.repaint = function () {
@@ -31,7 +32,7 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 		photo = photos.center();
 		photoLatLon = new LatLon(photo.latitude, photo.longitude);
 		photoLatLonQuery = photoLatLon.queryString();
-		mapUrl = 'http://maps.google.com/maps/api/staticmap?size=300x300&language=' +
+		mapUrl = 'http://maps.google.com/maps/api/staticmap?size=300x200&language=' +
 			Mojo.Locale.getCurrentLocale() + '&maptype=hybrid&markers=color:0xFF0000|' + photoLatLonQuery + '&sensor=true';
 		if (photos.latLon) {
 			distance  = photos.latLon.metersFrom(photoLatLon);
@@ -45,7 +46,7 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 		$('infoThumb').setAttribute('src', photo.url_t);
 		$('infoMap').setAttribute('src', mapUrl);
 		$('author').update(photo.ownername);
-		$('date').update(photo.datetaken);
+		$('date').update(Mojo.Format.formatRelativeDate(photo.datetaken.parseFlickrDate(), "default"));
 		license = nrbyFlickrLicenses[photo.license];
 		if (license) {
 			$('license').update('(' + license.name + ')');
@@ -81,7 +82,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 	/* use Mojo.View.render to render view templates and add them to the scene, if needed */
 	
 	/* setup widgets here */
-	controller.setupWidget('gotoPhotoPage', {}, {label : "View on Flickr"});
+	//controller.setupWidget('gotoPhotoPage', {}, {label : "View on Flickr"});
 	//controller.setupWidget('setWallpaper',  {}, {label : "Set As Wallpaper"});
 
 	
@@ -150,7 +151,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 	/* add event handlers to listen to events from widgets */
 	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap, function (event) {
 		Inactivity.userActivity();
-		console.log("GOTO PHOTO PAGE BUTTON PRESSED");
+		console.log("GOTO PHOTO PAGE TAPPED");
 		Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
 	}.bindAsEventListener(this));
 	Mojo.Event.listen($('infoMap'), Mojo.Event.tap, function (event) {
@@ -178,12 +179,25 @@ PhotoinfoAssistant.prototype.setup = function () {
 		});
 	}.bindAsEventListener(this));
 
-	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap,  function () {
-		self.controller.stageController.popScene();
-	});
-
 	//Mojo.Event.listen($('setWallpaper'),     Mojo.Event.tap,   setWallpaper);
 	Mojo.Event.listen($('infoBody'),      Mojo.Event.flick, this.flickListener);
+
+	if (PhotoinfoAssistant.dialogShown !== true) {
+		this.controller.showAlertDialog({
+			onChoose: function (value) {
+				Inactivity.userActivity();
+			},
+			title: $L("Photo Information"),
+			message: $L("Tap photo to view on Flickr.  Tap map to bring up map app.  Use menu on top left for more.  Do back gesture below screen to go back."),
+			choices: [
+				{label: $L("OK"), value: "cancel", type: 'dismiss'}    
+			]
+		});
+		PhotoinfoAssistant.dialogShown = true;
+	}
+
+
+
 };
 
 PhotoinfoAssistant.prototype.activate = function (event) {

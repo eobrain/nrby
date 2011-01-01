@@ -160,7 +160,7 @@ FirstAssistant.prototype.setup = function () {
 			Inactivity.userActivity();
 		},
 		title: $L("Nrby Photos"),
-		message: $L("Flick sideways to change photos.\n\nPinch out to zoom.\n\nTap photo to see information, and then use menu for preferences and more help."),
+		message: $L("Flick sideways to browse.  Pinch out to zoom.  Tap photo for more."),
 		choices: [
 			{label: $L("OK"), value: "cancel", type: 'dismiss'}    
 		]

@@ -40,6 +40,20 @@ WebpageAssistant.prototype.setup = function () {
 	);	
 	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
 	/* add event handlers to listen to events from widgets */
+
+	if (WebpageAssistant.dialogShown !== true) {
+		this.controller.showAlertDialog({
+			onChoose: function (value) {
+				Inactivity.userActivity();
+			},
+			title: $L("Photo on Flickr"),
+			message: $L("Do back gesture below screen to go back."),
+			choices: [
+				{label: $L("OK"), value: "cancel", type: 'dismiss'}    
+			]
+		});
+		WebpageAssistant.dialogShown = true;
+	}
 };
 
 WebpageAssistant.prototype.activate = function (event) {
