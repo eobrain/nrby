@@ -159,8 +159,8 @@ FirstAssistant.prototype.setup = function () {
 		onChoose: function (value) {
 			Inactivity.userActivity();
 		},
-		title: $L("How To use This App"),
-		message: $L("Flick sideways to change photos.  Pinch out to zoom.  Tap to see information."),
+		title: $L("Nrby Photos"),
+		message: $L("Flick sideways to change photos.\n\nPinch out to zoom.\n\nTap photo to see information, and then use menu for preferences and more help."),
 		choices: [
 			{label: $L("OK"), value: "cancel", type: 'dismiss'}    
 		]

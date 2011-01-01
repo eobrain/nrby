@@ -44,7 +44,8 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 		$('infoTitle').update(photo.title);
 		$('infoThumb').setAttribute('src', photo.url_t);
 		$('infoMap').setAttribute('src', mapUrl);
-		$('author').update('Copyright ' + photo.ownername);
+		$('author').update(photo.ownername);
+		$('date').update(photo.datetaken);
 		license = nrbyFlickrLicenses[photo.license];
 		if (license) {
 			$('license').update('(' + license.name + ')');
@@ -144,7 +145,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 		downloadAndSetWallpaper(self.photos.urlsCenter()[1]);
 	}.bindAsEventListener(this);*/
 		
-	this.controller.setupWidget(Mojo.Menu.appMenu, {}, StageAssistant.prototype.appMenuModel); 
+	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
 
 	/* add event handlers to listen to events from widgets */
 	Mojo.Event.listen($('gotoPhotoPage'), Mojo.Event.tap, function (event) {
@@ -158,12 +159,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 		photoLatLon = new LatLon(photo.latitude, photo.longitude);
 		Inactivity.userActivity();
 		console.log("GOTO MAP BUTTON PRESSED");
-		//if (self.photos.latLon) {
-		//mapQuery = 'from ' + self.photos.latLon.queryString() + ' to ' + photoLatLon.queryString() + '(' + photo.title + ')';  //TODO percent-encode to escape parens
-		//} else {
-		//pQuery = photo.title + '@' +  photoLatLon.queryString() ;  //TODO percent-encode to escape parens
 		mapQuery =  photoLatLon.queryString() + '(' + photo.title + ')';
-		//}
 		console.log("MAP QUERY >>>>>>> " + mapQuery);
 		loc = photoLatLon.gmapLocation();
 		loc.age = 10;
@@ -180,10 +176,6 @@ PhotoinfoAssistant.prototype.setup = function () {
 				}
 			}
 		});
-		/*this.controller.serviceRequest("palm://com.palm.applicationManager", {
-			method: "open",
-			parameters: {target: "maploc:" + photoLatLon.queryString()}
-		});*/
 	}.bindAsEventListener(this));
 
 	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap,  function () {

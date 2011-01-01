@@ -29,22 +29,25 @@ StageAssistant.prototype.setup = function () {
 
 };
 
-StageAssistant.prototype.appMenuModel = {
+StageAssistant.appMenuAttributes = {
+    omitDefaultItems: true
+};
+
+StageAssistant.appMenuModel = {
 	items: [
-		
-		{label: "About Nrby Photos...", command: 'do-nrbyAbout', shortcut: 'a'},
-		{label: "Preferences ...", items: [
-			{label: "Get Recent Photos", command: 'do-recently'}
-		]}
-		//{label: "Preferences", command: 'do-appPrefs', shortcut: 'p'},
-		//{label: "Help", command: 'do-appHelp', shortcut: 'h'}
+		{label: "About Nrby Photos...", command: 'do-nrbyAbout', shortcut: 'b'},
+		Mojo.Menu.editItem,
+		{label: "Preferences", items: [
+			{label: "Prefer Recent Photos", command: 'do-recently', shortcut: 's'}
+		], command: 'do-appPrefs'},
+		{label: "Help", command: 'do-help', shortcut: 'h'}
 	]
 };
 
 StageAssistant.prototype.handleCommand = function (event) {
 	Inactivity.userActivity();
 	if (event.type === Mojo.Event.commandEnable && 
-		(event.command === Mojo.Menu.helpCmd /*|| event.command === Mojo.Menu.prefsCmd*/)) 
+		(event.command === Mojo.Menu.helpCmd || event.command === Mojo.Menu.prefsCmd)) 
 	{
 		event.stopPropagation();
     }
@@ -53,15 +56,15 @@ StageAssistant.prototype.handleCommand = function (event) {
 		console.log("event.command=" + event.command);
         switch (event.command) {
         case 'do-recently':
-			console.log("Chose Preferences ... Get Recent Photos menu item");
-			StageAssistant.prototype.appMenuModel.items[1].items[0] = 
-				{label: "Get Interesting Photos", command: 'do-interesting'};
+			console.log("Chose Preferences ... Get Interesting Photos menu item");
+			StageAssistant.appMenuModel.items[2].items[0] = 
+				{label: "Prefer Interesting Photos", command: 'do-interesting', shortcut: 's'};
 			nrbyPreferences.recently = true;
 			break;
-        case 'do-recently':
+        case 'do-interesting':
 			console.log("Chose Preferences ... Get Recent Photos menu item");
-			StageAssistant.prototype.appMenuModel.items[1].items[0] = 
-				{label: "Get Recent Photos", command: 'do-recently'};
+			StageAssistant.appMenuModel.items[2].items[0] = 
+				{label: "Prefer Recent Photos", command: 'do-recently', shortcut: 's'};
 			nrbyPreferences.recently = false;
 			break;
         case 'do-nrbyAbout':
@@ -75,15 +78,9 @@ StageAssistant.prototype.handleCommand = function (event) {
                 ]
             });
             break;
-        case 'palm-help-cmd':
-            //this.controller.pushScene("help");
+        case 'do-help':
 			Mojo.Controller.stageController.pushScene("help", this);
-            break;
-			
-        /*case 'palm-prefs-cmd':
-            //this.controller.pushScene("prefs");
-			Mojo.Controller.stageController.pushScene("prefs", this);
-            break;*/
-        }
+            break;	
+		}
     }
 }; 

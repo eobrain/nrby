@@ -31,12 +31,14 @@ WebpageAssistant.prototype.setup = function () {
 	/* use Mojo.View.render to render view templates and add them to the scene, if needed */
 	
 	/* setup widgets here */
-	this.controller.setupWidget("webpage", this.attributes = {
-		url:	this.photo.photoPage()
-	},
-	this.model = {}
+	this.controller.setupWidget(
+		"webpage",
+		this.attributes = {
+			url:	this.photo.photoPage()
+		},
+		this.model = {}
 	);	
-	this.controller.setupWidget(Mojo.Menu.appMenu, {}, StageAssistant.prototype.appMenuModel); 
+	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
 	/* add event handlers to listen to events from widgets */
 };
 

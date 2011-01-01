@@ -296,11 +296,13 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 	/** fetch new photos by doing a Flickr search
 	 @type void */
 	this.fetch = function (latLon) {
-	    var radius, distanceMoved, movedMessage, flickrArgs, sort;
+	    var radius, distanceMoved, movedMessage, searchingMessage, flickrArgs, sort;
 		currentLatLon = latLon;
+		searchingMessage =  nrbyPreferences.recently ? 
+			'Searching for recent nearby photos' : "Searching for interesting nearby photos";
 		if (self.latLon === null) {
 		    distanceMoved = null;
-			movedMessage = 'Searching for nearby photos';
+			movedMessage = searchingMessage;
 		} else {
 		    distanceMoved = latLon.metersFrom(self.latLon);
 			if (distanceMoved > 0) {
@@ -332,7 +334,7 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 			console.log("RECENTLY = " + nrbyPreferences.recently + " so using " + sort);
 			//self.db.get("recently", false, function (recently) {
 			callFlickr(
-				movedMessage === null ? 'Searching for nearby photos' : movedMessage,
+				movedMessage === null ? searchingMessage : movedMessage,
 				'photos.search',
 				latLon.query() + '&radius=' + radius + 
 					"&" + sort +

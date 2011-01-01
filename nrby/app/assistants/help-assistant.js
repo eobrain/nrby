@@ -10,6 +10,8 @@
 /*jslint devel: true */
 
 /* declare globals to keep JSLint happy */
+var Mojo;
+var StageAssistant;
 var Inactivity;  //models
 
 function HelpAssistant() {
@@ -26,6 +28,7 @@ HelpAssistant.prototype.setup = function () {
 	/* use Mojo.View.render to render view templates and add them to the scene, if needed */
 	
 	/* setup widgets here */
+	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
 	
 	/* add event handlers to listen to events from widgets */
 };
