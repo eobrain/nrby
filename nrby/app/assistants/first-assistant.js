@@ -173,8 +173,7 @@ FirstAssistant.prototype.setup = function () {
 FirstAssistant.prototype.activate = function (event) {
 	Inactivity.userActivity();
     var self, prevTime, 
-	    wallpaperButton, wallpaperButtonText;
-
+	wallpaperButton, wallpaperButtonText;
 	console.log(">>> BEGIN first.activate -- this.activateDone=" + this.activateDone);
 
 	if (this.activateDone === true) {
@@ -217,7 +216,7 @@ FirstAssistant.prototype.activate = function (event) {
 
 	/** The main model for the app.
 	 @type Photos */
-	this.photos = new Photos(this.status, /*info,*/ showDialogBox, showPhotos/*, callAfterAcknowledgement*/);
+	this.photos = new Photos(this.status, showDialogBox, showPhotos);
 
 	//console.log("=== photos=" + this.photos);
 	prevTime = 0;
@@ -235,7 +234,7 @@ FirstAssistant.prototype.activate = function (event) {
 		    var latLon;
 
 			if (response.latitude === 0 && response.longitude === 0) {
-			    console.log("FLICKR RETURNED ZEROS FOR LAT/LON " + response);
+			    console.log("GPS RETURNED ZEROS FOR LAT/LON " + response);
 				return;
 			}
 		    latLon = new LatLon(response.latitude, response.longitude);
@@ -249,7 +248,7 @@ FirstAssistant.prototype.activate = function (event) {
 			self.photos.fetch(latLon);
 		},
 	    onFailure: function (response) {
-		    showDialogBox("Problem calling Flickr", response);
+		    showDialogBox("Problem using GPS", response);
 		}
 	});
 

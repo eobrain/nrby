@@ -9,54 +9,35 @@
 
 /*jslint devel: true */
 
-var nrbyPreferences = {
-	recently: false
-};
-
-console.log("RECENTLY INITIALIZED TO " + nrbyPreferences.recently);
-
-/*var Mojo;
-
 function NrbyPreferences() {
-	var self = this;
+	var recently, recentlyHook;
 
-	this.db = new Mojo.Depot(
-		{
-			name: "nrbyPhotos"
-		}, 
-		function () {
-			console.log("Preference database created.");
-		},
-		function (error) {
-			Mojo.log.error("Error creating preference database: " + error);
-		}
-	);
+	recently = false;
+	recentlyHook = function (v) {};
 
-	this.get = function (key, dfault, callback) {
-		self.db.get(
-			key,
-			function (value) {
-				console.log("callback(" + value + " === null) ? " + dfault + " : " + value + ")");
-				console.log("callback(" + ((value === null) ? dfault : value) + ")");
-				callback((value === null) ? dfault : value);
-			},
-			function (error)	{
-				Mojo.log.error("Error retrieving " + key + " from database: " + error);
-			}
-		);
+	this.getRecently = function () {
+		return recently;
 	};
 
-	this.put = function (key, value) {
-		this.db.add(
-			key,
-			value,
-			function () {
-				console.log("Wrote preference" + key + " = " + value);
-			},
-			function (error) {
-				Mojo.log.error("Error writing to preference database: " + error);
-			}
-		);
+	this.setRecently = function (v) {
+		recently = v;
+		recentlyHook(recently);
+	};
+
+	this.setRecentlyHook = function (f) {
+		recentlyHook = f;
 	};
 }
-*/
+
+var nrbyPreferences = new NrbyPreferences();
+
+/*{
+	recently: false,
+
+	recentlyHook: function (v) {},
+
+	setRecently: function (v) {
+		this.recently = v;
+		this.recentlyHook(this.recently);
+	}
+};*/

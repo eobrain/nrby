@@ -291,6 +291,30 @@ describe('Licenses', function () {
 
 });
 
+describe('nrbyPreferences', function () {
+	it('can set a hook', function () {
+		this.foo = "not set";
+		runs(function () {
+			var self = this;
+			nrbyPreferences.setRecentlyHook(function (v) {
+				self.foo = "set to " + v;
+			});
+			nrbyPreferences.setRecently(true);
+		});
+		waits(1);
+		runs(function () {
+			expect(this.foo).toEqual("set to true");
+		});
+		runs(function () {
+			nrbyPreferences.setRecently(false);
+		});
+		waits(1);
+		runs(function () {
+			expect(this.foo).toEqual("set to false");
+		});
+	});
+});
+
 describe('Inactivity', function () {
 
 	it('can cause a function to be executed in the future', function () {

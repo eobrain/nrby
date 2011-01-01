@@ -20,7 +20,7 @@ var nrbyInitData, LatLon, Inactivity, nrbyPreferences; //model
    a current photo that can be moved left or right
    @constructor
   */
-function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledgement*/) {
+function Photos(status, alertUser, showPhotos) {
     Mojo.requireProperty(status, ['set', 'reset']);
 	Mojo.requireFunction(alertUser,                'alertUser');
 	Mojo.requireFunction(showPhotos,               'showPhotos');
@@ -28,6 +28,7 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 	var MAX_AREA, IDEAL_PHOTO_COUNT,
 	    self, index, array, placeName, searchArea, noNearbyPhotos, density,
 	refreshInactivity,
+	recentlyHasChanged,
 	  currentLatLon, flickrResponse, goodNumberOfPhotos;
     self = this;
 
@@ -293,14 +294,19 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 	/** The geographical position of the device when these photos were fetched */
 	this.latLon = null;
 
+	recentlyHasChanged = false;
+	nrbyPreferences.setRecentlyHook(function (v) {
+		recentlyHasChanged = true;
+	});
+
 	/** fetch new photos by doing a Flickr search
 	 @type void */
 	this.fetch = function (latLon) {
 	    var radius, distanceMoved, movedMessage, searchingMessage, flickrArgs, sort;
 		currentLatLon = latLon;
-		searchingMessage =  nrbyPreferences.recently ? 
+		searchingMessage =  nrbyPreferences.getRecently() ? 
 			'Searching for recent nearby photos' : "Searching for interesting nearby photos";
-		if (self.latLon === null) {
+		if (self.latLon === null || recentlyHasChanged) {
 		    distanceMoved = null;
 			movedMessage = searchingMessage;
 		} else {
@@ -316,6 +322,7 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 			}
 			
 		}//
+		recentlyHasChanged = false;
 		flickrArgs = '&extras=geo,date_taken,url_m,url_t,license,owner_name&per_page=100&';
 		if (goodNumberOfPhotos && movedMessage === null) {
 		    //console.log("no need to fetch more photos");
@@ -330,8 +337,8 @@ function Photos(status, /*info,*/ alertUser, showPhotos /*, callAfterAcknowledge
 		} else {
 			//Normal case
 			radius = radiusKm();
-			sort = nrbyPreferences.recently ? "sort=date-posted-desc" : "sort=interestingness-desc";
-			console.log("RECENTLY = " + nrbyPreferences.recently + " so using " + sort);
+			sort = nrbyPreferences.getRecently() ? "sort=date-posted-desc" : "sort=interestingness-desc";
+			console.log("RECENTLY = " + nrbyPreferences.getRecently() + " so using " + sort);
 			//self.db.get("recently", false, function (recently) {
 			callFlickr(
 				movedMessage === null ? searchingMessage : movedMessage,

@@ -59,13 +59,13 @@ StageAssistant.prototype.handleCommand = function (event) {
 			console.log("Chose Preferences ... Get Interesting Photos menu item");
 			StageAssistant.appMenuModel.items[2].items[0] = 
 				{label: "Prefer Interesting Photos", command: 'do-interesting', shortcut: 's'};
-			nrbyPreferences.recently = true;
+			nrbyPreferences.setRecently(true);
 			break;
         case 'do-interesting':
 			console.log("Chose Preferences ... Get Recent Photos menu item");
 			StageAssistant.appMenuModel.items[2].items[0] = 
 				{label: "Prefer Recent Photos", command: 'do-recently', shortcut: 's'};
-			nrbyPreferences.recently = false;
+			nrbyPreferences.setRecently(false);
 			break;
         case 'do-nrbyAbout':
 			console.log("Chose About menu item");
