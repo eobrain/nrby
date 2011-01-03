@@ -38,10 +38,31 @@ WebpageAssistant.prototype.setup = function () {
 		},
 		this.model = {}
 	);	
+	this.controller.setupWidget(
+		Mojo.Menu.commandMenu,
+		this.commandMenuAttributes = {
+			menuClass: 'no-fade'
+		},
+		this.commandMenuModel = {
+			visible: true,
+			items: [ 
+				{ label: "Back", icon: "back", command: "do-back" }
+			]
+		}
+	); 
 	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
 	/* add event handlers to listen to events from widgets */
 
-	if (WebpageAssistant.dialogShown !== true) {
+	this.handleCommand = function (event) {
+		Inactivity.userActivity();
+		if (event.type === Mojo.Event.command) {
+			if (event.command === 'do-back') {
+				Mojo.Controller.stageController.popScene();		
+			}
+		}
+    };
+
+	/*if (WebpageAssistant.dialogShown !== true) {
 		this.controller.showAlertDialog({
 			onChoose: function (value) {
 				Inactivity.userActivity();
@@ -53,7 +74,7 @@ WebpageAssistant.prototype.setup = function () {
 			]
 		});
 		WebpageAssistant.dialogShown = true;
-	}
+	}*/
 };
 
 WebpageAssistant.prototype.activate = function (event) {

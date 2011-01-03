@@ -30,9 +30,31 @@ HelpAssistant.prototype.setup = function () {
 	/* setup widgets here */
 	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
 	
+	this.controller.setupWidget(
+		Mojo.Menu.commandMenu,
+		this.commandMenuAttributes = {
+			menuClass: 'no-fade'
+		},
+		this.commandMenuModel = {
+			visible: true,
+			items: [ 
+				{ label: "Back", icon: "back", command: "do-back" }
+			]
+		}
+	); 
+
 	/* add event handlers to listen to events from widgets */
 
-	if (HelpAssistant.dialogShown !== true) {
+	this.handleCommand = function (event) {
+		Inactivity.userActivity();
+		if (event.type === Mojo.Event.command) {
+			if (event.command === 'do-back') {
+				Mojo.Controller.stageController.popScene();		
+			}
+		}
+    };
+
+	/*if (HelpAssistant.dialogShown !== true) {
 		this.controller.showAlertDialog({
 			onChoose: function (value) {
 				Inactivity.userActivity();
@@ -44,7 +66,7 @@ HelpAssistant.prototype.setup = function () {
 			]
 		});
 		HelpAssistant.dialogShown = true;
-	}
+	}*/
 
 };
 

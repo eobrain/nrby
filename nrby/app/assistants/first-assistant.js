@@ -11,6 +11,7 @@
 
 /* declare globals to keep JSLint happy */
 var Mojo, $, $L, window, HTMLElement; //framework
+var StageAssistant; //controllers
 var Photos, LatLon, Inactivity;  //models
 
 /** @class The controller for the main photo-display scene. */
@@ -73,8 +74,8 @@ FirstAssistant.prototype.orientationChanged = function (orientation) {
 	$('ImageId').mojo.manualSize(size[0], size[1]);
 
 	//Move status and button to bottom
-	$('nrbyStatus').style.top     = (size[1] - 60) + "px";
-	$('wallpaperButton').style.top = (size[1] - 60) + "px";
+	//$('nrbyStatus').style.top     = (size[1] - 60) + "px";
+	//$('wallpaperButton').style.top = (size[1] - 60) + "px";
 };
 
 /** Setup the ImageViewer widget and various callback functions to be sent to the model. */
@@ -99,8 +100,6 @@ FirstAssistant.prototype.setup = function () {
 	        this.element.style.display = 'none';	  
 	    }
 	};
-
-    this.controller.enableFullScreenMode(true);
 
 	/** pass the two URLs as arguments to the provided function */
 	this.provideUrl = function (provided, urls) {
@@ -134,8 +133,22 @@ FirstAssistant.prototype.setup = function () {
 	    disabled: false
 	};
 
+	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
 	this.controller.setupWidget('ImageId', {}, viewerModel);
 	this.controller.setupWidget("wallpaperButton", {}, wallpaperButtonModel);
+	this.controller.setupWidget(
+		Mojo.Menu.commandMenu,
+		this.commandMenuAttributes = {
+			menuClass: 'no-fade'
+		},
+		this.commandMenuModel = {
+			visible: false,
+			items: [
+				{ iconPath: "images/menu-icon-fullscreen.png", command: "do-fullscreen" },
+				{ icon: "info", command: "do-props" } 
+			]
+		}
+	); 
 
     appCtl = Mojo.Controller.getAppController();
 
@@ -146,35 +159,66 @@ FirstAssistant.prototype.setup = function () {
 		this.status.reset();
 	}.bindAsEventListener(this);
 
+	this.setFullscreen = function (v) {
+		self.commandMenuModel.visible = !v;
+		self.controller.modelChanged(self.commandMenuModel);
+		this.isFullScreen = v;
+		this.controller.enableFullScreenMode(this.isFullScreen);
+	};
 
-	this.pushSceneListener = function (event) {
+	this.setFullscreen(true);
+
+	/** callback function used to respond to tap */
+    this.tapListener = function (event) {
 		Inactivity.userActivity();
-		Mojo.Controller.stageController.pushScene('photoinfo', this.photos, goLeft, goRight);
-	}.bindAsEventListener(this);	
+		self.setFullscreen(false);
+	}.bindAsEventListener(this);
+
+
+	this.handleCommand = function (event) {
+		Inactivity.userActivity();
+		if (event.type === Mojo.Event.command) {
+			switch (event.command) {
+			case 'do-props':
+				Mojo.Controller.stageController.pushScene('photoinfo', self.photos, goLeft, goRight);
+				break;
+			case 'do-fullscreen':
+				self.setFullscreen(true);
+				break;
+			}
+		}
+    };
+
+	//this.pushSceneListener = function (event) {
+	//	Inactivity.userActivity();
+	//	Mojo.Controller.stageController.pushScene('photoinfo', this.photos, goLeft, goRight);
+	//}.bindAsEventListener(this);	
 
 	Mojo.Event.listen(this.viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
-	Mojo.Event.listen(this.viewer, Mojo.Event.tap, this.pushSceneListener);
+	Mojo.Event.listen(this.viewer, Mojo.Event.tap, this.tapListener);
 
-	this.controller.showAlertDialog({
+	/*this.controller.showAlertDialog({
 		onChoose: function (value) {
 			Inactivity.userActivity();
 		},
 		title: $L("Nrby Photos"),
-		message: $L("Flick sideways to browse.  Pinch out to zoom.  Tap photo for more."),
+		message: $L("Flick sideways to browse.  Touch and hold photo for more."),
 		choices: [
 			{label: $L("OK"), value: "cancel", type: 'dismiss'}    
 		]
-	});
+	});*/
 
 }; //setup
 
 
 /** Create the Photos model object, and start listening for GPS location events. */
-FirstAssistant.prototype.activate = function (event) {
+FirstAssistant.prototype.activate = function (event, fullscreen) {
 	Inactivity.userActivity();
     var self, prevTime, 
 	wallpaperButton, wallpaperButtonText;
 	console.log(">>> BEGIN first.activate -- this.activateDone=" + this.activateDone);
+
+	this.setFullscreen(fullscreen === true);
 
 	if (this.activateDone === true) {
 	    console.log(">>> Not doing setup because already setup");
@@ -268,7 +312,8 @@ FirstAssistant.prototype.cleanup = function (event) {
 	/* this function should do any cleanup needed before the scene is destroyed as 
 	   a result of being popped off the scene stack */
 	Mojo.Event.stopListening(this.viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
-	Mojo.Event.stopListening(this.viewer, Mojo.Event.tap, this.pushSceneListener);
+	Mojo.Event.stopListening(this.viewer, Mojo.Event.hold, this.holdListener);
+	//Mojo.Event.stopListening(this.viewer, Mojo.Event.hold, this.pushSceneListener);
 };
 
 

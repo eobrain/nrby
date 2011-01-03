@@ -66,6 +66,10 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 		}
 		self.repaint();
 	}.bindAsEventListener(this);
+	/*this.backListener = function (event) {
+		Inactivity.userActivity();
+		Mojo.Controller.stageController.popScene();		
+	}.bindAsEventListener(this);*/
 }
 
 
@@ -147,14 +151,27 @@ PhotoinfoAssistant.prototype.setup = function () {
 	}.bindAsEventListener(this);*/
 		
 	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
+	this.controller.setupWidget(
+		Mojo.Menu.commandMenu,
+		this.commandMenuAttributes = {
+			menuClass: 'no-fade'
+		},
+		this.commandMenuModel = {
+			visible: true,
+			items: [ 
+				{ label: "Back", icon: "back", command: "do-back" },
+				{ label: "Flickr", iconPath: 'images/flickr.png', command: "do-flickr" }
+				//{ label: "Google Map", command: "do-map" }
+			]
+		}
+	); 
 
 	/* add event handlers to listen to events from widgets */
 	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap, function (event) {
 		Inactivity.userActivity();
-		console.log("GOTO PHOTO PAGE TAPPED");
-		Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
+		Mojo.Controller.stageController.popScene(event, true);		
 	}.bindAsEventListener(this));
-	Mojo.Event.listen($('infoMap'), Mojo.Event.tap, function (event) {
+	function openMap() {
 		var photo, photoLatLon, mapQuery, loc;
 		photo = self.photos.center();
 		photoLatLon = new LatLon(photo.latitude, photo.longitude);
@@ -177,24 +194,75 @@ PhotoinfoAssistant.prototype.setup = function () {
 				}
 			}
 		});
+	}
+
+	Mojo.Event.listen($('infoMap'), Mojo.Event.hold, function (event) {
+		openMap();
 	}.bindAsEventListener(this));
+
+	this.handleCommand = function (event) {
+		Inactivity.userActivity();
+		if (event.type === Mojo.Event.command) {
+			switch (event.command) {
+			case 'do-back':
+				Mojo.Controller.stageController.popScene(event, false);		
+				break;
+			case 'do-flickr':
+				Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
+				break;
+			case 'do-map':
+				openMap();
+				break;
+			}
+		}
+    };
+
+	/* * callback function used to respond to tap */
+    /*this.tapListener = function (event) {
+		Inactivity.userActivity();
+		this.controller.showAlertDialog({
+			onChoose: function (value) {
+				Inactivity.userActivity();
+				switch (value) {
+				case 'flickr':
+					Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
+					break;
+				case 'map':
+					openMap();
+					break;
+				case 'back':
+					Mojo.Controller.stageController.popScene();		
+					break;
+				}
+			},
+			title: this.photos.center().title,
+			choices: [
+				{label: $L("Back"),            value: "back",   type: 'secondary'},  
+				{label: $L("Flickr Web Site"), value: "flickr", type: 'primary'},
+				{label: $L("Map App"),         value: "map",    type: 'primary'},
+				{label: $L("Cancel"),          value: "cancel", type: 'dismiss'}    
+			]
+		});
+	}.bindAsEventListener(this);*/
 
 	//Mojo.Event.listen($('setWallpaper'),     Mojo.Event.tap,   setWallpaper);
 	Mojo.Event.listen($('infoBody'),      Mojo.Event.flick, this.flickListener);
+	//Mojo.Event.listen($('infoBody'),      Mojo.Event.tap, this.tapListener);
+	//Mojo.Event.listen($('infoBody'),      Mojo.Event.tap, this.backListener);
 
-	if (PhotoinfoAssistant.dialogShown !== true) {
+	/*if (PhotoinfoAssistant.dialogShown !== true) {
 		this.controller.showAlertDialog({
 			onChoose: function (value) {
 				Inactivity.userActivity();
 			},
 			title: $L("Photo Information"),
-			message: $L("Tap photo to view on Flickr.  Tap map to bring up map app.  Use menu on top left for more.  Do back gesture below screen to go back."),
+			message: $L("Press and hold photo to view on Flickr.  Press and hold map to bring up map app.  Use menu on top left for more.  Click anywhere to go back."),
 			choices: [
 				{label: $L("OK"), value: "cancel", type: 'dismiss'}    
 			]
 		});
 		PhotoinfoAssistant.dialogShown = true;
-	}
+	}*/
 
 
 
@@ -214,4 +282,6 @@ PhotoinfoAssistant.prototype.deactivate = function (event) {
 PhotoinfoAssistant.prototype.cleanup = function (event) {
 	/* this function should do any cleanup needed before the scene is destroyed as 
 	   a result of being popped off the scene stack */
+	Mojo.Event.stopListening($('infoBody'),      Mojo.Event.flick, this.flickListener);
+	//Mojo.Event.stopListening($('infoBody'),      Mojo.Event.tap, this.backListener);
 };

@@ -3,13 +3,13 @@
 #nrbyInfo   {font-size: small; overflow:hidden; position: absolute; top: 0;}
 /*#refreshButton {position:absolute; right:0; z-index:99999;display:none;}*/
 #wallpaperButton {position:absolute; left:0; z-index:99999;display:none;}
-#infoTitle {overflow:hidden;}
-#infoBody {margin-top:65px; text-align:center;}
+/*#infoTitle {overflow:hidden;}*/
+/*#infoBody {margin-top:65px; text-align:center;}*/
 #infoThumb {float:right; margin:3px;}
 .clearfloat {clear:both;}
 #infoGroup {text-align: left;}
 
-.my-scene-fade-top {
+.help-fade-top {
 	position: fixed; 
 	top: 0; 
 	z-index: 100000;
@@ -18,7 +18,7 @@
 	background: url(../images/my-scene-fade-top-dark.png) top center repeat-x;
 	-webkit-palm-mouse-target: ignore;
 }
-.my-scene-fade-bottom {
+.help-fade-bottom {
 	position: fixed; 
 	bottom: 0; 
 	z-index: 100000;
