@@ -28,7 +28,6 @@ var nrbyFlickrLicenses = (function () {
 
 	/** function of element*/
 	function canReuse() {
-		console.log("el=" + this);
 		return this.id !== "0";
 	}
 

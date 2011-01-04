@@ -15,19 +15,20 @@ var StageAssistant; //other assistants
 var nrbyFlickrLicenses, Inactivity, LatLon;  //models;
 
 /** @class The controller for the scene that shows information and
-provides controls for a particular photo. */
+provides controls for a particular photo. 
+
+@constructor this is the creator function for your scene assistant
+object. It will be passed all the additional parameters (after the
+scene name) that were passed to pushScene. The reference to the scene
+controller (this.controller) has not be established yet, so any
+initialization that needs the scene controller should be done in the
+setup function below.  */
 function PhotoinfoAssistant(photos, goLeft, goRight) {
-	/* this is the creator function for your scene assistant object. It will be passed all the 
-	   additional parameters (after the scene name) that were passed to pushScene. The reference
-	   to the scene controller (this.controller) has not be established yet, so any initialization
-	   that needs the scene controller should be done in the setup function below. */
+	var self, flickListener, popHandler, mapHandler;
+	
+	self = this;
 
-	var self = this;
-
-
-	this.photos = photos;
-
-	this.repaint = function () {
+	function repaint() {
 		var photo, photoLatLon, distance, direction, license, mapUrl, hereQuery, photoLatLonQuery;
 		photo = photos.center();
 		photoLatLon = new LatLon(photo.latitude, photo.longitude);
@@ -52,140 +53,29 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 			$('license').update(license.name);
 		}
 		photos.refreshPhotoView();
-	};
-	this.repaint();
+	}
 
-	this.flickListener = function (event) {
+	flickListener = function (event) {
 		Inactivity.userActivity();
 		if (event.velocity.x < 0) {
-			console.log("FLICK RIGHT");
 			goRight();
 		} else {
-			console.log("FLICK LEFT");
 			goLeft();
 		}
-		self.repaint();
-	}.bindAsEventListener(this);
-	/*this.backListener = function (event) {
-		Inactivity.userActivity();
-		Mojo.Controller.stageController.popScene();		
-	}.bindAsEventListener(this);*/
-}
-
-
-
-PhotoinfoAssistant.prototype.setup = function () {
-	Inactivity.userActivity();
-	var self, controller;
-	
-	self = this;
-    controller = this.controller;
-
-	/* this function is for setup tasks that have to happen when the scene is first created */
-		
-	/* use Mojo.View.render to render view templates and add them to the scene, if needed */
-	
-	/* setup widgets here */
-	//controller.setupWidget('gotoPhotoPage', {}, {label : "View on Flickr"});
-	//controller.setupWidget('setWallpaper',  {}, {label : "Set As Wallpaper"});
-
-	
-	/*function downloadAndSetWallpaper(url) {
-
-		console.log("DOWNLOADING " + url);
-		controller.serviceRequest(
-			'palm://com.palm.downloadmanager/', 
-			{
-				method: 'download', 
-				parameters: {
-					target: url,
-					mime: "image/jpeg",
-					targetDir : "/media/internal/downloads/",
-					targetFilename : "nrbyWallpaper.jpg",
-					keepFilenameOnRedirect: true,
-					subscribe: false
-				},
-				onSuccess: function (resp) {
-					console.log("DOWNLOADED " + Object.toJSON(resp));
-					controller.serviceRequest(
-						'palm://com.palm.systemservice/wallpaper', 
-						{
-							method: "importWallpaper",
-							parameters: {
-								target: "file:///media/internal/downloads/nrbyWallpaper.jpg"
-							},
-							onSuccess: function (returnValue, wallpaper) {
-								console.log("IMPORTED WALLPAPER " + Object.toJSON(returnValue) + " " + Object.toJSON(wallpaper));
-								
-						
-								controller.serviceRequest(
-									'palm://com.palm.systemservice/', 
-									{
-										method: "setPreferences",
-										parameters: {
-											wallpaper: wallpaper
-										},
-										onSuccess: function () {
-											console.log("set wallpaper");
-										},
-										onFailure: function (e) {
-											console.log("FAILED setting wallpaper " + Object.toJSON(e));
-										}
-									});
-								
-							},
-							onFailure: function (e) {
-								console.log("FAILED IMPORTED WALLPAPER " + Object.toJSON(e));
-							}
-						});  
-				},
-				onFailure: function (e) { 
-					console.log("FAILED DOWNLOADING " + Object.toJSON(e));
-				}
-			});
-	}*/
-
-	/*setWallpaper = function (event) {
-		console.log("SET WALLPAPER BUTTON PRESSED");
-		downloadAndSetWallpaper(self.photos.urlsCenter()[1]);
-	}.bindAsEventListener(this);*/
-		
-	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
-	this.controller.setupWidget(
-		Mojo.Menu.commandMenu,
-		this.commandMenuAttributes = {
-			menuClass: 'no-fade'
-		},
-		this.commandMenuModel = {
-			visible: true,
-			items: [ 
-				{ label: "Back", icon: "back", command: "do-back" },
-				{ label: "Flickr", iconPath: 'images/flickr.png', command: "do-flickr" }
-				//{ label: "Google Map", command: "do-map" }
-			]
-		}
-	); 
-
-	this.popHandler = function (event) {
-		Inactivity.userActivity();
-		Mojo.Controller.stageController.popScene(event, true);		
+		repaint();
 	}.bindAsEventListener(this);
 
-	/* add event handlers to listen to events from widgets */
-	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap, this.popHandler);
 
 	function openMap() {
 		var photo, photoLatLon, mapQuery, loc;
-		photo = self.photos.center();
+		photo = photos.center();
 		photoLatLon = new LatLon(photo.latitude, photo.longitude);
 		Inactivity.userActivity();
-		console.log("GOTO MAP BUTTON PRESSED");
 		mapQuery =  photoLatLon.queryString() + '(' + photo.title + ')';
-		console.log("MAP QUERY >>>>>>> " + mapQuery);
 		loc = photoLatLon.gmapLocation();
 		loc.age = 10;
-		if (self.photos.latLon) {
-			loc.acc = self.photos.latLon.metersFrom(photoLatLon);
+		if (photos.latLon) {
+			loc.acc = photos.latLon.metersFrom(photoLatLon);
 		} 
 		self.controller.serviceRequest("palm://com.palm.applicationManager", {
 			method: "open",
@@ -199,12 +89,55 @@ PhotoinfoAssistant.prototype.setup = function () {
 		});
 	}
 
-	this.mapHandler =  function (event) {
-		openMap();
-	}.bindAsEventListener(this);
+	// END PRIVATE VARIABLES AND METHODS 
+	////////////////////////
+    // BEGIN PUBLIC METHODS
 
-	Mojo.Event.listen($('infoMap'), Mojo.Event.hold, this.mapHandler);
 
+	/** Setup widgets and event handlers */
+	this.setup = function () {
+		Inactivity.userActivity();
+		
+
+		/* use Mojo.View.render to render view templates and add them to the scene, if needed */
+	
+		/* setup widgets here */
+		
+		this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
+		this.controller.setupWidget(
+			Mojo.Menu.commandMenu,
+			{menuClass: 'no-fade'},
+			{
+				visible: true,
+				items: [ 
+					{ label: "Back", icon: "back", command: "do-back" },
+					{ label: "Flickr", iconPath: 'images/flickr.png', command: "do-flickr" }
+				]
+			}
+		); 
+
+		popHandler = function (event) {
+			Inactivity.userActivity();
+			Mojo.Controller.stageController.popScene(event, true);		
+		}.bindAsEventListener(this);
+
+		/* add event handlers to listen to events from widgets */
+		Mojo.Event.listen($('infoThumb'), Mojo.Event.tap, popHandler);
+
+		mapHandler =  function (event) {
+			openMap();
+		}.bindAsEventListener(this);
+		
+		Mojo.Event.listen($('infoMap'), Mojo.Event.hold, mapHandler);
+		
+
+
+		Mojo.Event.listen($('infoBody'),      Mojo.Event.flick, flickListener);
+
+		repaint();
+	};
+
+	/** Handle commands from buttons along bottom of screen */
 	this.handleCommand = function (event) {
 		Inactivity.userActivity();
 		if (event.type === Mojo.Event.command) {
@@ -213,7 +146,7 @@ PhotoinfoAssistant.prototype.setup = function () {
 				Mojo.Controller.stageController.popScene(event, false);		
 				break;
 			case 'do-flickr':
-				Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
+				Mojo.Controller.stageController.pushScene('webpage', photos.center());
 				break;
 			case 'do-map':
 				openMap();
@@ -221,74 +154,23 @@ PhotoinfoAssistant.prototype.setup = function () {
 			}
 		}
     };
-
-	/* * callback function used to respond to tap */
-    /*this.tapListener = function (event) {
+	
+	/** Do nothing, except note activity */
+	this.activate = function (event) {
 		Inactivity.userActivity();
-		this.controller.showAlertDialog({
-			onChoose: function (value) {
-				Inactivity.userActivity();
-				switch (value) {
-				case 'flickr':
-					Mojo.Controller.stageController.pushScene('webpage', this.photos.center());
-					break;
-				case 'map':
-					openMap();
-					break;
-				case 'back':
-					Mojo.Controller.stageController.popScene();		
-					break;
-				}
-			},
-			title: this.photos.center().title,
-			choices: [
-				{label: $L("Back"),            value: "back",   type: 'secondary'},  
-				{label: $L("Flickr Web Site"), value: "flickr", type: 'primary'},
-				{label: $L("Map App"),         value: "map",    type: 'primary'},
-				{label: $L("Cancel"),          value: "cancel", type: 'dismiss'}    
-			]
-		});
-	}.bindAsEventListener(this);*/
+	};
+	
+	/** Do nothing, except note activity */
+	this.deactivate = function (event) {
+		Inactivity.userActivity();
+	};
+	
+	/** stop listening to events */
+	this.cleanup = function (event) {
+		Inactivity.userActivity();
+		Mojo.Event.stopListening($('infoBody'),  Mojo.Event.flick, flickListener);
+		Mojo.Event.stopListening($('infoThumb'), Mojo.Event.tap,   popHandler);
+		Mojo.Event.stopListening($('infoMap'),   Mojo.Event.hold,  mapHandler);
+	};
 
-	//Mojo.Event.listen($('setWallpaper'),     Mojo.Event.tap,   setWallpaper);
-	Mojo.Event.listen($('infoBody'),      Mojo.Event.flick, this.flickListener);
-	//Mojo.Event.listen($('infoBody'),      Mojo.Event.tap, this.tapListener);
-	//Mojo.Event.listen($('infoBody'),      Mojo.Event.tap, this.backListener);
-
-	/*if (PhotoinfoAssistant.dialogShown !== true) {
-		this.controller.showAlertDialog({
-			onChoose: function (value) {
-				Inactivity.userActivity();
-			},
-			title: $L("Photo Information"),
-			message: $L("Press and hold photo to view on Flickr.  Press and hold map to bring up map app.  Use menu on top left for more.  Click anywhere to go back."),
-			choices: [
-				{label: $L("OK"), value: "cancel", type: 'dismiss'}    
-			]
-		});
-		PhotoinfoAssistant.dialogShown = true;
-	}*/
-
-
-
-};
-
-PhotoinfoAssistant.prototype.activate = function (event) {
-	Inactivity.userActivity();
-	/* put in event handlers here that should only be in effect when this scene is active. For
-	   example, key handlers that are observing the document */
-};
-
-PhotoinfoAssistant.prototype.deactivate = function (event) {
-	/* remove any event handlers you added in activate and do any other cleanup that should happen before
-	   this scene is popped or another scene is pushed on top */
-};
-
-PhotoinfoAssistant.prototype.cleanup = function (event) {
-	/* this function should do any cleanup needed before the scene is destroyed as 
-	   a result of being popped off the scene stack */
-	Mojo.Event.stopListening($('infoBody'),  Mojo.Event.flick, this.flickListener);
-	Mojo.Event.stopListening($('infoThumb'), Mojo.Event.tap,   this.popHandler);
-	Mojo.Event.stopListening($('infoMap'),   Mojo.Event.hold,  this.mapHandler);
-	//Mojo.Event.stopListening($('infoBody'),      Mojo.Event.tap, this.backListener);
-};
+}

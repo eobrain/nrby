@@ -64,10 +64,8 @@ StageAssistant.prototype.handleCommand = function (event) {
     }
     this.controller = Mojo.Controller.stageController.activeScene();
     if (event.type === Mojo.Event.command) {
-		console.log("event.command=" + event.command);
         switch (event.command) {
         case 'do-recently':
-			console.log("Chose Preferences ... Get Recent Photos menu item");
 			StageAssistant.appMenuModel.items[2].items[0].items[0].chosen = false;
 			StageAssistant.appMenuModel.items[2].items[0].items[1].chosen = true;
 			nrbyPreferences.setRecently(true);
@@ -75,7 +73,6 @@ StageAssistant.prototype.handleCommand = function (event) {
 			//this.controller.modelChanged(StageAssistant.appMenuModel);
 			break;
         case 'do-interesting':
-			console.log("Chose Preferences ... Get Interesting Photos menu item");
 			StageAssistant.appMenuModel.items[2].items[0].items[0].chosen = true;
 			StageAssistant.appMenuModel.items[2].items[0].items[1].chosen = false;
 			nrbyPreferences.setRecently(false);
@@ -83,7 +80,6 @@ StageAssistant.prototype.handleCommand = function (event) {
 			//this.controller.modelChanged(StageAssistant.appMenuModel);
 			break;
         case 'do-nrbyAbout':
-			console.log("Chose About menu item");
             this.controller.showAlertDialog({
                 onChoose: function (value) {},
                 title: "Nrby Photos " + Mojo.Controller.appInfo.version,

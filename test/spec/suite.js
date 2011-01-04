@@ -14,14 +14,37 @@ var Mojo;
 var describe, it, expect, spyOn, jasmine, runs, waits;  //jasmine test framework  
 var Photos, LatLon, nrbyFlickrLicenses, Inactivity, nrbyPreferences; //code being tested
 
+var region;
+
+region = "us";
+
+Mojo   = jasmine.createSpyObj('Mojo', ['requireProperty', 'requireFunction']);
+Mojo.Locale = {
+	getCurrentFormatRegion: function () {
+		return region;
+	}
+};
+
 describe('Photos', function () {
-	var alertMsg, statusMsg, showPhotosCalled, info, status;
+	var alertMsg, statusMsg, showPhotosCalled, info, status, region;
 	alertMsg = null;
 	showPhotosCalled = 0;
 
-	Mojo   = jasmine.createSpyObj('Mojo', ['requireProperty', 'requireFunction']);
 	status = jasmine.createSpyObj('Status', ['set', 'reset']);
 	info   = jasmine.createSpyObj('Status', ['set']);
+
+
+
+	function log() {
+		var args = Array.prototype.slice.call(arguments);
+		console.log(args.join(''));
+	}
+
+	Mojo.Log = {
+		info: log,
+		warn: log,
+		error: log
+	};
 
 	//mock Depot
 	/*Mojo.Depot = Class.create({
@@ -57,12 +80,14 @@ describe('Photos', function () {
     it('can be instantiated', function () {
 		var photos;
 		photos = new Photos(status, alertUserStub, showPhotosStub);
+		photos.fillWithInitData();
 		expect(photos.urlsCenter().length).toEqual(2);
     });
 
     it('can have their index moved', function () {
 		var photos, url1, url2;
 		photos = new Photos(status, alertUserStub, showPhotosStub);
+		photos.fillWithInitData();
 		url1 = photos.urlsCenter()[0];
 		url2 = photos.urlsRight()[0];
 		expect(url1).toNotEqual(url2);
@@ -79,6 +104,7 @@ describe('Photos', function () {
     it('has a center photo', function () {
 		var photos, photo;
 		photos = new Photos(status, alertUserStub, showPhotosStub);
+		photos.fillWithInitData();
 		photo = photos.center();
 		expect(photo.title).toEqual("San Francisco drops away behind us.");
 	});
@@ -96,6 +122,7 @@ describe('Photo', function () {
 	function showPhotosStub(left, center, middle) {}
 
 	photos = new Photos(status, alertUserStub, showPhotosStub);
+	photos.fillWithInitData();
 
     it('has title', function () {
 		var photo = photos.center();
@@ -237,13 +264,6 @@ describe('LatLon', function () {
 });
 
 describe('Number', function () {
-
-	var region = null;
-	Mojo.Locale = {
-		getCurrentFormatRegion: function () {
-			return region;
-		}
-	};
 
 	it('converts from metres to locale-specific string', function () {
 		region = "ie";

@@ -40,7 +40,6 @@ function LatLon(latDeg, lonDeg) {
 		dLon = other.lon - self.lon;
 		y = Math.sin(dLon) * Math.cos(other.lat);
 		x = Math.cos(self.lat) * Math.sin(other.lat) - Math.sin(self.lat) * Math.cos(other.lat) * Math.cos(dLon);
-		//console.log("self.lon=" + self.lon + " other.lon=" + other.lon + " dLon=" + dLon + " x=" + x + " y=" + y);
 		return Math.atan2(y, x);
     }
 
@@ -66,9 +65,7 @@ function LatLon(latDeg, lonDeg) {
     /** @returns direction to another point, symbolically ('N', 'NE', 'E', ... )
 	@type String */
     this.directionTo = function (that) {
-	    //console.log("bearing=" + bearing(that) / this.RADIANS_PER_DEGREE + " degrees");
 	    var index = Math.round((bearing(that) + this.CIRCLE) / this.CIRCLE_8th);
-		//console.log("direction index = " + index);
 		return this.DIRECTIONS[index % 8];
     };
 

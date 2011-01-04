@@ -16,9 +16,11 @@ var Photos, LatLon, Inactivity;  //models
 
 /** @class The controller for the main photo-display scene. */
 function FirstAssistant() {
-	var self = this;
 
-	this.viewer = $('ImageId');
+	//Private fields
+	var self, imageViewChanged, tapListener, isFullScreen, commandMenuModel, activateDone, status, photos;
+
+	self = this;
 
 	HTMLElement.prototype.animateOpacity = function (handleOpacity) {
 		if (self.opacityAnimation) {
@@ -47,208 +49,50 @@ function FirstAssistant() {
 		});
 	};
 
-
-}
-
-/** Handle the event of the user rotating the device, resizing the image viewer accordingly. */
-FirstAssistant.prototype.orientationChanged = function (orientation) {
-    var size, button;
-
-    // you will be passed "left", "right", "up", or "down" (and maybe others?)
-	switch (orientation) {
-	case "up":   //normal portrait
-	case "down": //reverse portrait
-	    size = [Mojo.Environment.DeviceInfo.screenWidth, Mojo.Environment.DeviceInfo.screenHeight];
-		break;
-	case "left":  //left side down
-	case "right": //right side down
-		size = [Mojo.Environment.DeviceInfo.screenHeight, Mojo.Environment.DeviceInfo.screenWidth];
-		break;
-	default:
-		//do nothing
-		return;
-	}
-
-
-	//Make viewer fill the screen
-	$('ImageId').mojo.manualSize(size[0], size[1]);
-
-	//Move status and button to bottom
-	//$('nrbyStatus').style.top     = (size[1] - 60) + "px";
-	//$('wallpaperButton').style.top = (size[1] - 60) + "px";
-};
-
-/** Setup the ImageViewer widget and various callback functions to be sent to the model. */
-FirstAssistant.prototype.setup = function () {
-	Inactivity.userActivity();
-
-    var self, viewerModel, wallpaperButtonModel,
-	appCtl, ctl;
-
-
-	self = this; //for use in functions
-
-	/** A display area used for brief status messages. */
-	this.status = {
-	    element: $('nrbyStatus'),
-		set: function (message) {
-	        this.element.update(message);
-	        this.element.style.display = 'block';
-	    },
-	    reset: function () {
-	        this.element.update('-------');
-	        this.element.style.display = 'none';	  
-	    }
+	commandMenuModel = {
+		visible: false,
+		items: [
+			{ iconPath: "images/menu-icon-fullscreen.png", command: "do-fullscreen" },
+			{ icon: "info", command: "do-props" } 
+		]
 	};
+
+	function setFullscreen(v) {
+		commandMenuModel.visible = !v;
+		self.controller.modelChanged(commandMenuModel);
+		isFullScreen = v;
+		self.controller.enableFullScreenMode(isFullScreen);
+	}
+		
+
 
 	/** pass the two URLs as arguments to the provided function */
-	this.provideUrl = function (provided, urls) {
-	    provided(urls[1], urls[0]);
-	};
+	function provideUrl(provided, urls) {
+		provided(urls[1], urls[0]);
+	}
 
+		
 	function goLeft() {
-		self.photos.moveLeft();
-		self.provideUrl(self.viewer.mojo.leftUrlProvided, self.photos.urlsLeft());
+		photos.moveLeft();
+		provideUrl($('ImageId').mojo.leftUrlProvided, photos.urlsLeft());
 	}
-
+	
 	function goRight() {
-		self.photos.moveRight();
-		self.provideUrl(self.viewer.mojo.rightUrlProvided, self.photos.urlsRight());
+		photos.moveRight();
+		provideUrl($('ImageId').mojo.rightUrlProvided, photos.urlsRight());
 	}
-
-	viewerModel = {
-		background: 'black',  
-		onLeftFunction : function (event) {
-			Inactivity.userActivity();
-			goLeft();
-	    },
-		onRightFunction : function (event) {
-			Inactivity.userActivity();
-			goRight();
-	    }
-	};
-
-    wallpaperButtonModel = {
-	    label : "Set as Wallpaper",
-	    disabled: false
-	};
-
-	this.controller.setupWidget(Mojo.Menu.appMenu, StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
-	this.controller.setupWidget('ImageId', {}, viewerModel);
-	this.controller.setupWidget("wallpaperButton", {}, wallpaperButtonModel);
-	this.controller.setupWidget(
-		Mojo.Menu.commandMenu,
-		this.commandMenuAttributes = {
-			menuClass: 'no-fade'
-		},
-		this.commandMenuModel = {
-			visible: false,
-			items: [
-				{ iconPath: "images/menu-icon-fullscreen.png", command: "do-fullscreen" },
-				{ icon: "info", command: "do-props" } 
-			]
-		}
-	); 
-
-    appCtl = Mojo.Controller.getAppController();
-
-	/** callback function used to respond to new photo being displayed
-	by ImageViewer */
-    this.imageViewChanged = function (event) {
-	    FirstAssistant.prototype.orientationChanged(appCtl.getScreenOrientation());
-		this.status.reset();
-	}.bindAsEventListener(this);
-
-	this.setFullscreen = function (v) {
-		self.commandMenuModel.visible = !v;
-		self.controller.modelChanged(self.commandMenuModel);
-		this.isFullScreen = v;
-		this.controller.enableFullScreenMode(this.isFullScreen);
-	};
-
-	this.setFullscreen(true);
-
-	/** callback function used to respond to tap */
-    this.tapListener = function (event) {
-		Inactivity.userActivity();
-		self.setFullscreen(false);
-	}.bindAsEventListener(this);
-
-
-	this.handleCommand = function (event) {
-		Inactivity.userActivity();
-		if (event.type === Mojo.Event.command) {
-			switch (event.command) {
-			case 'do-props':
-				Mojo.Controller.stageController.pushScene('photoinfo', self.photos, goLeft, goRight);
-				break;
-			case 'do-fullscreen':
-				self.setFullscreen(true);
-				break;
-			}
-		}
-    };
-
-	//this.pushSceneListener = function (event) {
-	//	Inactivity.userActivity();
-	//	Mojo.Controller.stageController.pushScene('photoinfo', this.photos, goLeft, goRight);
-	//}.bindAsEventListener(this);	
-
-	Mojo.Event.listen(this.viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
-	Mojo.Event.listen(this.viewer, Mojo.Event.tap,              this.tapListener);
-
-	/*this.controller.showAlertDialog({
-		onChoose: function (value) {
-			Inactivity.userActivity();
-		},
-		title: $L("Nrby Photos"),
-		message: $L("Flick sideways to browse.  Touch and hold photo for more."),
-		choices: [
-			{label: $L("OK"), value: "cancel", type: 'dismiss'}    
-		]
-	});*/
-
-}; //setup
-
-
-/** Create the Photos model object, and start listening for GPS location events. */
-FirstAssistant.prototype.activate = function (event, fullscreen) {
-	Inactivity.userActivity();
-    var self, prevTime, 
-	wallpaperButton, wallpaperButtonText;
-	console.log(">>> BEGIN first.activate -- this.activateDone=" + this.activateDone);
-
-	this.setFullscreen(fullscreen === true);
-
-	if (this.activateDone === true) {
-	    console.log(">>> Not doing setup because already setup");
-		return;
-	}
-
-
-	/* put in event handlers here that should only be in effect when this scene is active. For
-	   example, key handlers that are observing the document */
-
-    wallpaperButton = $('wallpaperButton');
-	wallpaperButtonText = wallpaperButton.getElementsBySelector('.truncating-text')[0];
-	self = this; //for use in functions
+		
 
 	function showPhotos(urlsLeft, urlsCenter, urlsRight) {
-	    self.provideUrl(self.viewer.mojo.leftUrlProvided,   urlsLeft);
-		self.provideUrl(self.viewer.mojo.centerUrlProvided, urlsCenter);
-		self.provideUrl(self.viewer.mojo.rightUrlProvided,  urlsRight);
+		var viewerMojo = $('ImageId').mojo;
+		provideUrl(viewerMojo.leftUrlProvided,   urlsLeft);
+		provideUrl(viewerMojo.centerUrlProvided, urlsCenter);
+		provideUrl(viewerMojo.rightUrlProvided,  urlsRight);
 	}
-
-	this.stopListeningToWallpaperButton = function () { /* do nothing*/ };
-
+	
 	// This function will popup a dialog, displaying the message passed in.
 	function showDialogBox(titleStr, message) {
-		console.log("\n" + 
-					"********************\n" +
-					"* " + titleStr + "\n" +
-					"********************\n" + 
-					"* " + message + "\n" +
-					"********************\n");
+		Mojo.Log.error("ERROR REPORTED TO USER", titleStr, message);
 		self.controller.showAlertDialog({
 			onChoose: function (value) {},
 			title: titleStr,
@@ -258,64 +102,187 @@ FirstAssistant.prototype.activate = function (event, fullscreen) {
 			]
 		});
 	}
+	
 
 
-	/** The main model for the app.
-	 @type Photos */
-	this.photos = new Photos(this.status, showDialogBox, showPhotos);
 
-	//console.log("=== photos=" + this.photos);
-	prevTime = 0;
+	// END Private methods, variables, and code
+	/////////////////////////////////////////////
+	// Begin public methods
 
-	function now() {
-	    var d = new Date();
-		return d.getTime();
-	}
-
-
-    this.controller.serviceRequest('palm://com.palm.location', {
-	    method : 'startTracking',
-		parameters: { subscribe: true },
-		onSuccess: function (response) {
-		    var latLon;
-
-			if (response.latitude === 0 && response.longitude === 0) {
-			    console.log("GPS RETURNED ZEROS FOR LAT/LON " + response);
-				return;
-			}
-		    latLon = new LatLon(response.latitude, response.longitude);
-
-		    /* throttle the calls to Flickr */
-		    if ((now() - prevTime) < 10000 /*Mojo.Controller.appInfo.periodMillisec*/) {
-			    return;  /* too soon */
-			}
-			prevTime = now();
-
-			self.photos.fetch(latLon);
-		},
-	    onFailure: function (response) {
-		    showDialogBox("Problem using GPS", response);
+	/** Handle the event of the user rotating the device, resizing the image viewer accordingly. */
+	this.orientationChanged = function (orientation) {
+		var size, button;
+		
+		// you will be passed "left", "right", "up", or "down" (and maybe others?)
+		switch (orientation) {
+		case "up":   //normal portrait
+		case "down": //reverse portrait
+			size = [Mojo.Environment.DeviceInfo.screenWidth, Mojo.Environment.DeviceInfo.screenHeight];
+			break;
+		case "left":  //left side down
+		case "right": //right side down
+			size = [Mojo.Environment.DeviceInfo.screenHeight, Mojo.Environment.DeviceInfo.screenWidth];
+			break;
+		default:
+			//do nothing
+			return;
 		}
-	});
 
-	this.activateDone = true;
-	console.log(">>> END   first.activate -- this.activateDone=" + this.activateDone);
+		//Make viewer fill the screen
+		$('ImageId').mojo.manualSize(size[0], size[1]);
+		
+	};
 
-};
-
-FirstAssistant.prototype.deactivate = function (event) {
-	/* remove any event handlers you added in activate and do any other cleanup that should happen before
-	   this scene is popped or another scene is pushed on top */
-    this.stopListeningToWallpaperButton(); //clear any previous listeners
-};
-
-/** Stop listening to the ImageViewer widget */
-FirstAssistant.prototype.cleanup = function (event) {
-	/* this function should do any cleanup needed before the scene is destroyed as 
-	   a result of being popped off the scene stack */
-	Mojo.Event.stopListening(this.viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
-	Mojo.Event.stopListening(this.viewer, Mojo.Event.tap,              this.tapListener);
-};
+	/** Setup the ImageViewer widget and various callback functions to be sent to the model. */
+	this.setup = function () {
+		Inactivity.userActivity();
+		
+		var viewerModel, 
+		appCtl, ctl;
 
 
+		viewerModel = {
+			background: 'black',  
+			onLeftFunction : function (event) {
+				Inactivity.userActivity();
+				goLeft();
+			},
+			onRightFunction : function (event) {
+				Inactivity.userActivity();
+				goRight();
+			}
+		};
+		
+		this.controller.setupWidget('ImageId',             {},                               viewerModel);
+		this.controller.setupWidget(Mojo.Menu.appMenu,     StageAssistant.appMenuAttributes, StageAssistant.appMenuModel);
+		this.controller.setupWidget(Mojo.Menu.commandMenu, {menuClass: 'no-fade'},           commandMenuModel);
+			
+		appCtl = Mojo.Controller.getAppController();
+		
+		/** callback function used to respond to new photo being
+		displayed by ImageViewer */
+		imageViewChanged = function (event) {
+			this.orientationChanged(appCtl.getScreenOrientation());
+			status.reset();
+		}.bindAsEventListener(this);
+		
+		
+		/** callback function used to respond to tap */
+		tapListener = function (event) {
+			Inactivity.userActivity();
+			setFullscreen(false);
+		}.bindAsEventListener(this);
+		
+		
+		Mojo.Event.listen($('ImageId'), Mojo.Event.imageViewChanged, imageViewChanged);
+		Mojo.Event.listen($('ImageId'), Mojo.Event.tap,              tapListener);
+		
+		setFullscreen(false);
 
+		/** A display area used for brief status messages. */
+		status = {
+			element: $('nrbyStatus'),
+			set: function (message) {
+				status.element.update(message);
+				status.element.style.display = 'block';
+			},
+			reset: function () {
+				status.element.update('-------');
+				status.element.style.display = 'none';	  
+			}
+		};
+
+
+		/** The main model for the app.  
+            @type Photos */
+		photos = new Photos(status, showDialogBox, showPhotos);
+		
+		
+	}; //setup
+
+	
+	/** Handle events from buttons on bottom of screen */
+	this.handleCommand = function (event) {
+		Inactivity.userActivity();
+		if (event.type === Mojo.Event.command) {
+			switch (event.command) {
+			case 'do-props':
+				Mojo.Controller.stageController.pushScene('photoinfo', photos, goLeft, goRight);
+				break;
+			case 'do-fullscreen':
+				setFullscreen(true);
+				break;
+			}
+		}
+	};
+		
+	/** Create the Photos model object, and start listening for GPS location events. */
+	this.activate = function (event, fullscreen) {
+		Inactivity.userActivity();
+		var prevTime; 
+		
+
+		setFullscreen(fullscreen === true);
+		
+		if (activateDone === true) {
+			return;
+		}
+		
+		
+		photos.fillWithInitData();
+
+		/* put in event handlers here that should only be in effect when this scene is active. For
+	   example, key handlers that are observing the document */
+		
+		
+		prevTime = 0;
+		
+		function now() {
+			var d = new Date();
+			return d.getTime();
+		}
+		
+		this.controller.serviceRequest('palm://com.palm.location', {
+			method : 'startTracking',
+			parameters: { subscribe: true },
+			onSuccess: function (response) {
+				var latLon;
+				
+				if (response.latitude === 0 && response.longitude === 0) {
+					Mojo.Log.warn("GPS RETURNED ZEROS FOR LAT/LON ", response);
+					return;
+				}
+				latLon = new LatLon(response.latitude, response.longitude);
+				
+				/* throttle the calls to Flickr */
+				if ((now() - prevTime) < 10000 /*Mojo.Controller.appInfo.periodMillisec*/) {
+					return;  /* too soon */
+				}
+				prevTime = now();
+				
+				photos.fetch(latLon);
+			},
+			onFailure: function (response) {
+				showDialogBox("Problem using GPS", response);
+			}
+		});
+
+		activateDone = true;
+		
+	};
+
+	/** do nothing except note activity */
+	this.deactivate = function (event) {
+		//TODO: stop listening for GPS events?
+		Inactivity.userActivity();
+	};
+	
+	/** Stop listening to events */
+	this.cleanup = function (event) {
+		Inactivity.userActivity();
+		Mojo.Event.stopListening($('ImageId'), Mojo.Event.imageViewChanged, imageViewChanged);
+		Mojo.Event.stopListening($('ImageId'), Mojo.Event.tap,              tapListener);
+	};
+	
+}

@@ -25,15 +25,7 @@ function Inactivity(delay) {
 			func = self.func;
 			Mojo.requireFunction(func, 'setInterval func=' + func);
 			self.func = null;
-			console.log("lastActivity         = " + Inactivity.lastActivity);
-			console.log("lastActivity + delay = " + (Inactivity.lastActivity + delay));
-			console.log("now                  = " + now);
-			console.log("Executing " + func);
 			func();
-		} else {
-			if (self.func !== null) {
-				console.log("Not executing " + self.func);
-			}
 		}
 	}, delay / 2);
 

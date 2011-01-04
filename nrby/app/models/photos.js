@@ -26,15 +26,14 @@ function Photos(status, alertUser, showPhotos) {
 	Mojo.requireFunction(showPhotos,               'showPhotos');
 
 	var MAX_AREA, IDEAL_PHOTO_COUNT,
-	    self, index, array, placeName, searchArea, noNearbyPhotos, density,
-	refreshInactivity,
-	recentlyHasChanged,
-	  currentLatLon, flickrResponse, goodNumberOfPhotos;
+	self, index, array, placeName, searchArea, noNearbyPhotos, density, info,
+	refreshInactivity, recentlyHasChanged, currentLatLon, flickrResponse, goodNumberOfPhotos;
+
     self = this;
 
-	/* begin private members */
+	info = Mojo.Log.info;
 
-	//this.db = new NrbyPreferences();
+	/* begin private members */
 
 	refreshInactivity = new Inactivity(10000);
 
@@ -64,22 +63,26 @@ function Photos(status, alertUser, showPhotos) {
 	    return (1000000 * d) + " photos/km^2";
 	}
 
+	Number.prototype.sqrtMetersLocalized = function () {
+		return Math.sqrt(this).metersLocalized();
+	};
+
 	function updatePhotoDensity(photoCount) {
 	    var confidence, densityNew;
-		console.log("radius=" + Math.sqrt(searchArea) + ", photoCount=" + photoCount);
+		info("radius=", searchArea.sqrtMetersLocalized(), ", photoCount=", photoCount);
 		if (photoCount === 0) {
 		    density /= 10;
-			console.log("No photos, so let's greatly reduce the assumed density");
+			info("No photos, so let's greatly reduce the assumed density");
 		} else {
 			//more confident with more photos
 			confidence = photoCount / (photoCount + 10);
 			densityNew = photoCount / searchArea;
 
-			console.log("density was " + densityMsg(density) + ", now " + densityMsg(densityNew) +
-						" with a confidence of " + confidence);
+			info("density was ", densityMsg(density), ", now ", densityMsg(densityNew),
+						  " with a confidence of ", confidence);
 			density += confidence * (densityNew - density);
 		}
-		console.log("density now " + densityMsg(density));
+		info("density now ", densityMsg(density));
 	}
 
 	function radiusKm() {
@@ -88,7 +91,7 @@ function Photos(status, alertUser, showPhotos) {
 
 
 	function radiusMsg() {
-	    return Math.sqrt(searchArea).metersLocalized();
+	    return searchArea.sqrtMetersLocalized();
 	}
 
 	function isEqual(a, b) {
@@ -111,10 +114,11 @@ function Photos(status, alertUser, showPhotos) {
 	function exposePhotos(photoArray) {
 	    var i, n, center, permuted;
 		n = photoArray.length;
-		console.log(n === 0 ? "no photos to expose" : "exposing " + photoArray[0].title);
 		if (n === 0) {
+			Mojo.Log.warn("no photos to expose");
 		    return;
 		}
+		info("exposing ", photoArray[0].title);
 		center = ((n % 2) === 0)  ?  n / 2  :  (n - 1) / 2;
 		for (i = 0; i < n; i += 1) {
 			if (i % 2 === 0) { //even
@@ -127,7 +131,7 @@ function Photos(status, alertUser, showPhotos) {
 		}
 		index = center;
 		if (index >= 0 && array.length > 0) {
-		    console.log('Fetching photo ' + array[index].title + ' ...');
+		    info('Fetching photo "', array[index].title, '" ...');
 			self.refreshPhotoView();
 		}
 	}
@@ -138,7 +142,8 @@ function Photos(status, alertUser, showPhotos) {
 		idealSearchArea = IDEAL_PHOTO_COUNT / density;
 		newSearchArea = Math.sqrt(idealSearchArea * searchArea);
 		if (newSearchArea > MAX_AREA) {
-		    console.log("search radius " + Math.sqrt(newSearchArea) + " exceeds max " + Math.sqrt(MAX_AREA));
+		    info("search radius ", newSearchArea.sqrtMetersLocalized(), 
+				 " exceeds max ", MAX_AREA.sqrtMetersLocalized());
 		    newSearchArea = MAX_AREA;
 		}
 
@@ -146,18 +151,18 @@ function Photos(status, alertUser, showPhotos) {
 		
 		change =  Math.abs(newSearchArea - searchArea) / (newSearchArea + searchArea);
 
-		console.log("Changing search radius " + Math.sqrt(searchArea) + " --> " +  
-					Math.sqrt(newSearchArea) + " CHANGE=" + change);
+		info("Changing search radius ", searchArea.sqrtMetersLocalized(), " --> ",  
+					  newSearchArea.sqrtMetersLocalized(), " CHANGE=", change);
 		goodNumberOfPhotos = change < 0.2;
 		if (goodNumberOfPhotos) {
-		    console.log("Not changing search area because it has not changed much");
+		    info("Not changing search area because it has not changed much");
 		} else {
 		    if (newSearchArea > searchArea) {
-			    console.log("Increasing radius from " + Math.sqrt(searchArea) + 
-							" to " + Math.sqrt(newSearchArea));
+			    info("Increasing radius from ", searchArea.sqrtMetersLocalized(), 
+							  " to ", newSearchArea.sqrtMetersLocalized());
 			} else {
-			    console.log("Reducing radius from " + Math.sqrt(searchArea) + 
-							" to " + Math.sqrt(newSearchArea));
+			    info("Reducing radius from ", searchArea.sqrtMetersLocalized(), 
+							  " to ", newSearchArea.sqrtMetersLocalized());
 			}
 			searchArea = newSearchArea;
 		}
@@ -168,9 +173,9 @@ function Photos(status, alertUser, showPhotos) {
 
 	    total = parseInt(response.photos.total, 10);
 		n = response.photos.photo.length;
-		console.log("Flickr returned " + n + " of " + total + " photo");
+		info("Flickr returned ", n, " of ", total, " photo");
 		if (n > 0) {
-		    console.log("first photo is " + response.photos.photo[0].title);
+		    info("first photo is ", response.photos.photo[0].title);
 		}
 
 		noNearbyPhotos = (total === 0 && searchArea === MAX_AREA);
@@ -196,7 +201,6 @@ function Photos(status, alertUser, showPhotos) {
 
     function callFlickr(message, method, args, callback) {
 	    var url, req;
-		//console.log(message + " CALLING FLICKR " + method + "(" + args + ")");
 	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
 		'&api_key=' + Mojo.Controller.appInfo.flickrApiKey +
 		'&' + args + '&format=json&nojsoncallback=1';
@@ -207,7 +211,6 @@ function Photos(status, alertUser, showPhotos) {
 			    status.reset();
 				var response, places, place, n, i, placeMsg, flickrSearchHandler;
 				if (transport.responseText === '') {
-					console.log("FLICKR RETURNED EMPTY RESPONSE");
 					alertUser("Flickr returned an empty response", message);
 					return;
 				}
@@ -312,7 +315,7 @@ function Photos(status, alertUser, showPhotos) {
 		} else {
 		    distanceMoved = latLon.metersFrom(self.latLon);
 			if (distanceMoved > 0) {
-				console.log("Moved " + distanceMoved + " meters " + self.latLon.directionTo(latLon));
+				info("Moved ", distanceMoved, " meters ", self.latLon.directionTo(latLon));
 			}
 			if (distanceMoved > Math.sqrt(searchArea) / 10) {
 			    movedMessage = 'You have moved ' + 
@@ -326,7 +329,6 @@ function Photos(status, alertUser, showPhotos) {
 		recentlyHasChanged = false;
 		flickrArgs = '&extras=geo,date_taken,url_m,url_t,license,owner_name&per_page=100&';
 		if (goodNumberOfPhotos && movedMessage === null) {
-		    //console.log("no need to fetch more photos");
 		    return;
 		} else if (noNearbyPhotos) {
 			callFlickr(
@@ -338,8 +340,6 @@ function Photos(status, alertUser, showPhotos) {
 		} else {
 			//Normal case
 			sort = nrbyPreferences.getRecently() ? "sort=date-posted-desc" : "sort=interestingness-desc";
-			console.log("RECENTLY = " + nrbyPreferences.getRecently() + " so using " + sort);
-			//self.db.get("recently", false, function (recently) {
 			callFlickr(
 				movedMessage === null ? searchingMessage : movedMessage,
 				'photos.search',
@@ -353,42 +353,27 @@ function Photos(status, alertUser, showPhotos) {
 		self.latLon = latLon;
 	};
 
-	setPhotos(nrbyInitData);
+	/** Initialize with some dummy photos to view while waiting for real photos to load */
+	this.fillWithInitData = function () {
+		status.set('Showing some placeholder photos while waiting.');
+		setPhotos(nrbyInitData);
+	};
 }
 
 /** Parse a timestamp of the form  "YYYY-MM-DD hh:mm:ss" and return a Date object */
 String.prototype.parseFlickrDate = function () {
-	console.log("##### parseFlickrDate(" + this + ')');
 	var dateTime, date, time,
 	    year, month, day, hour, min, sec;
 	dateTime = this.split(' ');
-	console.log("##### dateTime=" + dateTime);
 	date = dateTime[0].split('-');
 	time = dateTime[1].split(':');
-	console.log("##### date=" + date);
-	console.log("##### time=" + time);
 	year =  parseInt(date[0], 10);
 	month = parseInt(date[1], 10) - 1;
 	day =   parseInt(date[2], 10);
 	hour =  parseInt(time[0], 10);
 	min =   parseInt(time[1], 10);
 	sec =   parseInt(time[2], 10);
-	console.log("##### =year=" + year);
-	console.log("##### =month=" + month);
-	console.log("##### =day=" + day);
-	console.log("##### =hour=" + hour);
-	console.log("##### =min=" + min);
-	console.log("##### =sec=" + sec);
 	return new Date(year, month, day, hour, min, sec);
 };
 
-
-
-/* * get photo page of photo 
-       @type String * /
-Photos.photoPage = function (photo) {
-	return "http://www.flickr.com/photos/" + photo.owner + "/" + photo.id + "/";
-}*/
-
-	
 
