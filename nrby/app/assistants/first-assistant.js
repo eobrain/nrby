@@ -195,7 +195,7 @@ FirstAssistant.prototype.setup = function () {
 	//}.bindAsEventListener(this);	
 
 	Mojo.Event.listen(this.viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
-	Mojo.Event.listen(this.viewer, Mojo.Event.tap, this.tapListener);
+	Mojo.Event.listen(this.viewer, Mojo.Event.tap,              this.tapListener);
 
 	/*this.controller.showAlertDialog({
 		onChoose: function (value) {
@@ -249,11 +249,13 @@ FirstAssistant.prototype.activate = function (event, fullscreen) {
 					"********************\n" + 
 					"* " + message + "\n" +
 					"********************\n");
-		this.controller.showAlertDialog({
+		self.controller.showAlertDialog({
 			onChoose: function (value) {},
 			title: titleStr,
 			message: message,
-			choices: [ {label: 'OK', value: 'OK', type: 'color'} ]
+			choices: [
+				{label: 'OK', value: ''}
+			]
 		});
 	}
 
@@ -312,8 +314,7 @@ FirstAssistant.prototype.cleanup = function (event) {
 	/* this function should do any cleanup needed before the scene is destroyed as 
 	   a result of being popped off the scene stack */
 	Mojo.Event.stopListening(this.viewer, Mojo.Event.imageViewChanged, this.imageViewChanged);
-	Mojo.Event.stopListening(this.viewer, Mojo.Event.hold, this.holdListener);
-	//Mojo.Event.stopListening(this.viewer, Mojo.Event.hold, this.pushSceneListener);
+	Mojo.Event.stopListening(this.viewer, Mojo.Event.tap,              this.tapListener);
 };
 
 

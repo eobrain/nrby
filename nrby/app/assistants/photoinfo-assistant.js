@@ -57,7 +57,7 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 
 	this.flickListener = function (event) {
 		Inactivity.userActivity();
-		if (event.velocity.x > 0) {
+		if (event.velocity.x < 0) {
 			console.log("FLICK RIGHT");
 			goRight();
 		} else {
@@ -166,11 +166,14 @@ PhotoinfoAssistant.prototype.setup = function () {
 		}
 	); 
 
-	/* add event handlers to listen to events from widgets */
-	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap, function (event) {
+	this.popHandler = function (event) {
 		Inactivity.userActivity();
 		Mojo.Controller.stageController.popScene(event, true);		
-	}.bindAsEventListener(this));
+	}.bindAsEventListener(this);
+
+	/* add event handlers to listen to events from widgets */
+	Mojo.Event.listen($('infoThumb'), Mojo.Event.tap, this.popHandler);
+
 	function openMap() {
 		var photo, photoLatLon, mapQuery, loc;
 		photo = self.photos.center();
@@ -196,9 +199,11 @@ PhotoinfoAssistant.prototype.setup = function () {
 		});
 	}
 
-	Mojo.Event.listen($('infoMap'), Mojo.Event.hold, function (event) {
+	this.mapHandler =  function (event) {
 		openMap();
-	}.bindAsEventListener(this));
+	}.bindAsEventListener(this);
+
+	Mojo.Event.listen($('infoMap'), Mojo.Event.hold, this.mapHandler);
 
 	this.handleCommand = function (event) {
 		Inactivity.userActivity();
@@ -282,6 +287,8 @@ PhotoinfoAssistant.prototype.deactivate = function (event) {
 PhotoinfoAssistant.prototype.cleanup = function (event) {
 	/* this function should do any cleanup needed before the scene is destroyed as 
 	   a result of being popped off the scene stack */
-	Mojo.Event.stopListening($('infoBody'),      Mojo.Event.flick, this.flickListener);
+	Mojo.Event.stopListening($('infoBody'),  Mojo.Event.flick, this.flickListener);
+	Mojo.Event.stopListening($('infoThumb'), Mojo.Event.tap,   this.popHandler);
+	Mojo.Event.stopListening($('infoMap'),   Mojo.Event.hold,  this.mapHandler);
 	//Mojo.Event.stopListening($('infoBody'),      Mojo.Event.tap, this.backListener);
 };

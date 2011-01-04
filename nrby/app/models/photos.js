@@ -208,19 +208,19 @@ function Photos(status, alertUser, showPhotos) {
 				var response, places, place, n, i, placeMsg, flickrSearchHandler;
 				if (transport.responseText === '') {
 					console.log("FLICKR RETURNED EMPTY RESPONSE");
-					alertUser(message + " -- fail");
+					alertUser("Flickr returned an empty response", message);
 					return;
 				}
 				response = Mojo.parseJSON(transport.responseText);
 				if (response.stat !== "ok") {
-					alertUser("Error from Fickr", transport.responseText);
+					alertUser("Error response from Fickr", transport.responseText);
 				} else {
 				    callback(response);
 				}
 			},
 		    onFailure: function () {
 			    status.reset();
-			    alertUser("Problem with " + message, method);
+			    alertUser("Flickr failed when " + method + ' called ', message);
 			}
 		});
 	}
@@ -302,10 +302,10 @@ function Photos(status, alertUser, showPhotos) {
 	/** fetch new photos by doing a Flickr search
 	 @type void */
 	this.fetch = function (latLon) {
-	    var radius, distanceMoved, movedMessage, searchingMessage, flickrArgs, sort;
+	    var distanceMoved, movedMessage, searchingMessage, flickrArgs, sort;
 		currentLatLon = latLon;
-		searchingMessage =  nrbyPreferences.getRecently() ? 
-			'Searching for recent nearby photos' : "Searching for interesting nearby photos";
+		searchingMessage = (nrbyPreferences.getRecently() ? 
+							'Searching for recent photos' : "Searching for interesting photos") + " within " + radiusMsg();
 		if (self.latLon === null || recentlyHasChanged) {
 		    distanceMoved = null;
 			movedMessage = searchingMessage;
@@ -315,8 +315,9 @@ function Photos(status, alertUser, showPhotos) {
 				console.log("Moved " + distanceMoved + " meters " + self.latLon.directionTo(latLon));
 			}
 			if (distanceMoved > Math.sqrt(searchArea) / 10) {
-			    movedMessage = 'Searching. You have moved ' + 
-				    distanceMoved.metersLocalized() + ' ' + self.latLon.directionTo(latLon);
+			    movedMessage = 'You have moved ' + 
+				    distanceMoved.metersLocalized() + ' ' + self.latLon.directionTo(latLon) + 
+					". Searching within " + radiusMsg();
 			} else {
 			    movedMessage = null;
 			}
@@ -336,14 +337,13 @@ function Photos(status, alertUser, showPhotos) {
 			);
 		} else {
 			//Normal case
-			radius = radiusKm();
 			sort = nrbyPreferences.getRecently() ? "sort=date-posted-desc" : "sort=interestingness-desc";
 			console.log("RECENTLY = " + nrbyPreferences.getRecently() + " so using " + sort);
 			//self.db.get("recently", false, function (recently) {
 			callFlickr(
 				movedMessage === null ? searchingMessage : movedMessage,
 				'photos.search',
-				latLon.query() + '&radius=' + radius + 
+				latLon.query() + '&radius=' + radiusKm() + 
 					"&" + sort +
 					flickrArgs + 'min_upload_date=0',
 				setPhotos

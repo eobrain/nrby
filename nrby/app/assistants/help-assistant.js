@@ -10,7 +10,7 @@
 /*jslint devel: true */
 
 /* declare globals to keep JSLint happy */
-var Mojo, $L;
+var Mojo, $L, $;
 var StageAssistant;
 var Inactivity;  //models
 
@@ -19,6 +19,8 @@ function HelpAssistant() {
 	   additional parameters (after the scene name) that were passed to pushScene. The reference
 	   to the scene controller (this.controller) has not be established yet, so any initialization
 	   that needs the scene controller should be done in the setup function below. */
+
+
 }
 
 HelpAssistant.prototype.setup = function () {
@@ -43,6 +45,9 @@ HelpAssistant.prototype.setup = function () {
 		}
 	); 
 
+	$('releaseWebsite').setAttribute(
+		'href',
+		"http://nrby.eamonn.org/" + Mojo.Controller.appInfo.version + "-release.html");
 	/* add event handlers to listen to events from widgets */
 
 	this.handleCommand = function (event) {

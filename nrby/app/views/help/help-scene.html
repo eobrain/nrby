@@ -5,26 +5,117 @@
     
     <h1 class="palm-body-title" x-mojo-loc=''> Help </h1>
 
-    <p class="palm-body-text" x-mojo-loc=''> At the main photo display
-      view: <strong>flick sideways</strong> to see more
-      photos, <strong>tap the fullscreen button</strong> to hide the
-      buttons, <strong>tap the "i" button</strong> to see more
-      information about the photo.</p>
+    <p class="palm-body-text" x-mojo-loc=''>Display most interesting
+      photographs that people on the Flickr photo-sharing web site
+      have taken close to your current location. Swipe left and right
+      to browse through the photographs.  See new
+      photos loaded as you travel about. See the position of the photo
+      on a map or go to its Flickr web page to see more. (All
+      photographs are copyright of their owners.)</p>
 
-    <p class="palm-body-text" x-mojo-loc=''> When viewing the
-     information about the photo you can <strong>tap the Flickr
-     icon</strong> to view on Flickr or <strong>press and
-     hold</strong> on the map to bring up the Google Map app in a new
-     card.</p>
+    <div class="palm-group">
 
-    <p class="palm-body-text" x-mojo-loc=''> As with most WebOS apps
-    you can get back to the previous view by making the <strong>back
-    gesture</strong> right-to-left on the blank area below the screen.
-    </p>
+      <h2 class="palm-group-title">controls</h2>
 
-    <p class="palm-body-text" x-mojo-loc=''> To customize the app,
-     choose "Preferences" from the small <strong>menu</strong> at the
-     top left of the screen.</p>
+      <p class="palm-body-text" x-mojo-loc=''> At the main photo
+	display view: <strong>flick sideways</strong> to see more
+	photos, <strong>tap the full-screen button</strong> to hide
+	the visible controls, <strong>tap the "i" button</strong> to
+	see more information about the photo.  <strong>Rotate</strong>
+	the phone sideways if necessary to get photographs to better
+	fill the screen.  </p>
+      
+      <p class="palm-body-text" x-mojo-loc=''> When viewing the
+	information about the photo you can <strong>tap the Flickr
+	icon</strong> to view on the Flickr photo-sharing
+	or <strong>press and hold</strong> on the map to bring up the
+	Google Map app in a new card.</p>
+      
+      <p class="palm-body-text" x-mojo-loc=''> As with most WebOS apps
+	you can get back to the previous view by making the <strong>back
+	  gesture</strong> right-to-left on the blank area below the screen.
+      </p>
+      
+      <p class="palm-body-text" x-mojo-loc=''> To customize the app,
+	choose "Preferences" from the small <strong>menu</strong> at the
+	top left of the screen.</p>
+
+    </div>
+
+     <div class="palm-group">
+
+      <h2 class="palm-group-title">Updates</h2>
+
+      <p class="palm-body-text" x-mojo-loc=''>To see if there are any
+      updates please visit the <a id="releaseWebsite"
+      href="http://nrby.eamonn.org">Nrby Photos web page</a></p>
+      
+    </div>
+
+   <div class="palm-group">
+
+      <h2 class="palm-group-title">How photos are found</h2>
+
+      <p class="palm-body-text" x-mojo-loc=''>The application queries
+      Flickr to return the most "interesting" photos in a given radius
+      around your current position. (Where "Interestingness" is a
+      value that Flickr calculates for each photograph based on many
+      different factors.)  It does not know ahead of time the local
+      density of photographs, so it repeatedly tries querying with
+      different search radiuses until it gets backs a reasonable
+      number of photographs.  It shows the most interesting photograph
+      initially, and as you flick left and right away from the initial
+      photograph you get next most interesting photographs.  </p>
+
+      <p class="palm-body-text" x-mojo-loc=''>In the application menu,
+      under "Preferences", you can switch the application to ask
+      Flickr for the most recent photographs, rather than the most
+      interesting.</p>
+      
+      <p class="palm-body-text" x-mojo-loc=''>The application will
+      only do a new query with a new search radius when you have not
+      touched the application for a little while, so try not touching
+      the phone for about ten seconds to see if you get some new
+      photos. </p>
+
+    </div>
+
+    <div class="palm-group">
+
+      <h2 class="palm-group-title">Privacy Statement</h2>
+
+      <p class="palm-body-text" x-mojo-loc=''>This application does
+      not store any permanent information either on your phone or on
+      the Internet.  It
+      is <a href="http://www.flickr.com/services/apps/72157624066325640/">registered
+      with Flickr</a> which does gather anonymous aggregate counts of
+      the connections the application makes to the Flickr
+      photo-sharing web site.</p>
+      
+    </div>
+
+    <div class="palm-group">
+
+      <h2 class="palm-group-title">Source Code</h2>
+
+      <p class="palm-body-text" x-mojo-loc=''>If you are a programmer
+      you are free to take the open-source code for this application
+      and use it in your own application -- provided your application
+      is also open source and you display a notice on your application
+      with a link to your source code.</p>
+
+      <p class="palm-body-text" x-mojo-loc=''>The source code
+      is <a href="https://github.com/eobrain/nrby">on Github</a> from
+      where you can check it out using the git source-code control
+      program.  It comes with a Makefile that builds and installs it
+      on Linux and Mac.</p>
+
+      <p class="palm-body-text" x-mojo-loc=''>For a list of features,
+      implemented and planned, see the project
+      on <a href="https://www.pivotaltracker.com/projects/134754">Pivotal
+      Tracker</a>.</p>
+      
+    </div>
 
  </div>
 </div>

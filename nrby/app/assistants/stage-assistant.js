@@ -35,14 +35,25 @@ StageAssistant.appMenuAttributes = {
 
 StageAssistant.appMenuModel = {
 	items: [
-		{label: "About Nrby Photos...", command: 'do-nrbyAbout', shortcut: 'b'},
 		Mojo.Menu.editItem,
+		{label: "About Nrby Photos...", command: 'do-nrbyAbout', shortcut: 'b'},
 		{label: "Preferences", items: [
-			{label: "Prefer Recent Photos", command: 'do-recently', shortcut: 's'}
+			{label: "Sort Photos by", /*toggleCmd: 'do-interesting',*/ items: [
+				{chosen: true, label: "How Interesting", command: 'do-interesting', shortcut: 'i'},
+				{chosen: false, label: "How Recent",      command: 'do-recently',   shortcut: 'r'}
+			]}
+			/*{disabled: false, label: "Prefer Interesting Photos", command: 'do-interesting', shortcut: 'i'},
+			{disabled: true,  label: "Prefer Recent Photos",      command: 'do-recently',   shortcut: 'r'}*/
 		], command: 'do-appPrefs'},
 		{label: "Help", command: 'do-help', shortcut: 'h'}
 	]
 };
+
+/*StageAssistant.adjustAppMenu(){
+	var recently = nrbyPreferences.getRecently();
+	StageAssistant.appMenuModel.items[2].items[0].disabled = true;
+	StageAssistant.appMenuModel.items[2].items[1].disabled = false;
+}*/
 
 StageAssistant.prototype.handleCommand = function (event) {
 	Inactivity.userActivity();
@@ -56,16 +67,20 @@ StageAssistant.prototype.handleCommand = function (event) {
 		console.log("event.command=" + event.command);
         switch (event.command) {
         case 'do-recently':
-			console.log("Chose Preferences ... Get Interesting Photos menu item");
-			StageAssistant.appMenuModel.items[2].items[0] = 
-				{label: "Prefer Interesting Photos", command: 'do-interesting', shortcut: 's'};
+			console.log("Chose Preferences ... Get Recent Photos menu item");
+			StageAssistant.appMenuModel.items[2].items[0].items[0].chosen = false;
+			StageAssistant.appMenuModel.items[2].items[0].items[1].chosen = true;
 			nrbyPreferences.setRecently(true);
+			//StageAssistant.appMenuModel.items[2].toggleCmd = event.command;
+			//this.controller.modelChanged(StageAssistant.appMenuModel);
 			break;
         case 'do-interesting':
-			console.log("Chose Preferences ... Get Recent Photos menu item");
-			StageAssistant.appMenuModel.items[2].items[0] = 
-				{label: "Prefer Recent Photos", command: 'do-recently', shortcut: 's'};
+			console.log("Chose Preferences ... Get Interesting Photos menu item");
+			StageAssistant.appMenuModel.items[2].items[0].items[0].chosen = true;
+			StageAssistant.appMenuModel.items[2].items[0].items[1].chosen = false;
 			nrbyPreferences.setRecently(false);
+			//StageAssistant.appMenuModel.items[2].toggleCmd = event.command;
+			//this.controller.modelChanged(StageAssistant.appMenuModel);
 			break;
         case 'do-nrbyAbout':
 			console.log("Chose About menu item");
