@@ -20,12 +20,10 @@ var nrbyInitData, LatLon, Inactivity, nrbyPreferences; //model
    a current photo that can be moved left or right
    @constructor
   */
-function Photos(status, alertUser, showPhotos) {
-    Mojo.requireProperty(status, ['set', 'reset']);
-	Mojo.requireFunction(alertUser,                'alertUser');
-	Mojo.requireFunction(showPhotos,               'showPhotos');
+function Photos() {
 
 	var MAX_AREA, IDEAL_PHOTO_COUNT,
+	feedback,
 	self, index, array, placeName, searchArea, noNearbyPhotos, density, info,
 	refreshInactivity, recentlyHasChanged, currentLatLon, flickrResponse, goodNumberOfPhotos;
 
@@ -204,26 +202,27 @@ function Photos(status, alertUser, showPhotos) {
 	    url = 'http://api.flickr.com/services/rest/?method=flickr.' + method +
 		'&api_key=' + Mojo.Controller.appInfo.flickrApiKey +
 		'&' + args + '&format=json&nojsoncallback=1';
-		status.set(message + '...');
+		feedback.status.set(message + '...');
 		req = new Ajax.Request(url, {
 		    method: 'get',
 			onSuccess: function (transport) {
-			    status.reset();
+			    feedback.status.reset();
 				var response, places, place, n, i, placeMsg, flickrSearchHandler;
 				if (transport.responseText === '') {
-					alertUser("Flickr returned an empty response", message);
+					feedback.alertUser("Flickr returned an empty response", message);
 					return;
 				}
 				response = Mojo.parseJSON(transport.responseText);
 				if (response.stat !== "ok") {
-					alertUser("Error response from Fickr", transport.responseText);
+					feedback.alertUser("Error response from Fickr", transport.responseText);
 				} else {
 				    callback(response);
 				}
 			},
 		    onFailure: function () {
-			    status.reset();
-			    alertUser("Flickr failed when " + method + ' called ', message);
+			    feedback.status.reset();
+				feedback.status.set("Flickr failed when " + method + ' called ');
+			    //feedback.alertUser("Flickr failed when " + method + ' called ', message);
 			}
 		});
 	}
@@ -249,9 +248,17 @@ function Photos(status, alertUser, showPhotos) {
 
 	/* begin public members that can access private members */
 
+	/** set the feedback object used to send feedback back to the user */
+	this.setFeedback = function (fb) {
+		feedback = fb;
+		Mojo.requireProperty(feedback.status,      ['set', 'reset']);
+		Mojo.requireFunction(feedback.alertUser,  'feedback.alertUser');
+		Mojo.requireFunction(feedback.showPhotos, 'feedback.showPhotos');
+	};
+
 	/** Make view in sync with model */
 	this.refreshPhotoView = function () {
-		showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
+		feedback.showPhotos(self.urlsLeft(), self.urlsCenter(), self.urlsRight());
 	};
 
 	/** get center photo 
@@ -355,7 +362,7 @@ function Photos(status, alertUser, showPhotos) {
 
 	/** Initialize with some dummy photos to view while waiting for real photos to load */
 	this.fillWithInitData = function () {
-		status.set('Showing some placeholder photos while waiting.');
+		feedback.status.set('Showing some placeholder photos while waiting.');
 		setPhotos(nrbyInitData);
 	};
 }

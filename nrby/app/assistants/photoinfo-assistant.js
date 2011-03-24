@@ -155,9 +155,38 @@ function PhotoinfoAssistant(photos, goLeft, goRight) {
 		}
     };
 	
-	/** Do nothing, except note activity */
+	/** Set feedback callbacks */
 	this.activate = function (event) {
 		Inactivity.userActivity();
+		var status = {
+			element: $('nrbyStatus'),
+			set: function (message) {
+				Mojo.Log.info("MESSAGE TO USER: ", message);
+				status.element.update(message);
+				status.element.style.display = 'block';
+			},
+			reset: function () {
+				status.element.update('-------');
+				status.element.style.display = 'none';	  
+			}
+		};
+		photos.setFeedback({
+			status: status,
+			alertUser:  function (titleStr, message) {
+				Mojo.Log.error("ERROR REPORTED TO USER", titleStr, message);
+				self.controller.showAlertDialog({
+					onChoose: function (value) {},
+					title: titleStr,
+					message: message,
+					choices: [
+						{label: 'OK', value: ''}
+					]
+				});
+			},
+			showPhotos: function showPhotos(urlsLeft, urlsCenter, urlsRight) {
+				repaint();
+			}
+		});
 	};
 	
 	/** Do nothing, except note activity */

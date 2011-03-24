@@ -26,14 +26,21 @@ Mojo.Locale = {
 };
 
 describe('Photos', function () {
-	var alertMsg, statusMsg, showPhotosCalled, info, status, region;
+	var alertMsg, statusMsg, showPhotosCalled, region, info, feedback;
 	alertMsg = null;
 	showPhotosCalled = 0;
+	
+	feedback = {
+		status:     jasmine.createSpyObj('Status', ['set', 'reset']),
+		alertUser:  function alertUserStub(message) { 
+			alertMsg = message;
+		},
+		showPhotos: function showPhotosStub(left, center, middle) { 
+			showPhotosCalled += 1; 
+		}
+	};
 
-	status = jasmine.createSpyObj('Status', ['set', 'reset']);
-	info   = jasmine.createSpyObj('Status', ['set']);
-
-
+	info = jasmine.createSpyObj('Status', ['set']);
 
 	function log() {
 		var args = Array.prototype.slice.call(arguments);
@@ -46,47 +53,20 @@ describe('Photos', function () {
 		error: log
 	};
 
-	//mock Depot
-	/*Mojo.Depot = Class.create({
-
-		data: {},
-
-		initialize: function (options, onSuccess, onFailure) {
-			onSuccess();
-		},
-
-		add: function (key, value, onS, onF) {
-			console.log("add(" + key + "," + value + "," + onS + "," + onF + ")");
-			this.data[key] = value;
-			onS();
-		},
-
-		get: function (key, onS, onF) {
-			console.log("get(" + key + "," + onS + "," + onF + ") onS(" + this.data[key] + ")");
-			var result = this.data[key];
-			onS(result === undefined ? null : result);
-		}
-
-	});*/
 	
-	function alertUserStub(message) {
-	    alertMsg = message;
-	}
-
-	function showPhotosStub(left, center, middle) {
-	    showPhotosCalled += 1;
-	}
 
     it('can be instantiated', function () {
 		var photos;
-		photos = new Photos(status, alertUserStub, showPhotosStub);
+		photos = new Photos();
+		photos.setFeedback(feedback);
 		photos.fillWithInitData();
 		expect(photos.urlsCenter().length).toEqual(2);
     });
 
     it('can have their index moved', function () {
 		var photos, url1, url2;
-		photos = new Photos(status, alertUserStub, showPhotosStub);
+		photos = new Photos();
+		photos.setFeedback(feedback);
 		photos.fillWithInitData();
 		url1 = photos.urlsCenter()[0];
 		url2 = photos.urlsRight()[0];
@@ -103,7 +83,8 @@ describe('Photos', function () {
 
     it('has a center photo', function () {
 		var photos, photo;
-		photos = new Photos(status, alertUserStub, showPhotosStub);
+		photos = new Photos();
+		photos.setFeedback(feedback);
 		photos.fillWithInitData();
 		photo = photos.center();
 		expect(photo.title).toEqual("San Francisco drops away behind us.");
@@ -112,16 +93,18 @@ describe('Photos', function () {
 });
 
 describe('Photo', function () {
-	var photos, info, status;
+	var photos, info, feedback;
 
-	status = jasmine.createSpyObj('Status', ['set', 'reset']);
 	info   = jasmine.createSpyObj('Status', ['set']);
 
-	function alertUserStub(message) {}
+	feedback = {
+		status:     jasmine.createSpyObj('Status', ['set', 'reset']),
+		alertUser:  function (message) {},
+		showPhotos: function (left, center, middle) {}
+	};
 
-	function showPhotosStub(left, center, middle) {}
-
-	photos = new Photos(status, alertUserStub, showPhotosStub);
+	photos = new Photos();
+	photos.setFeedback(feedback);
 	photos.fillWithInitData();
 
     it('has title', function () {

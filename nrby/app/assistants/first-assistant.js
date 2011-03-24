@@ -184,6 +184,7 @@ function FirstAssistant() {
 		status = {
 			element: $('nrbyStatus'),
 			set: function (message) {
+				Mojo.Log.info("MESSAGE TO USER: ", message);
 				status.element.update(message);
 				status.element.style.display = 'block';
 			},
@@ -196,7 +197,7 @@ function FirstAssistant() {
 
 		/** The main model for the app.  
             @type Photos */
-		photos = new Photos(status, showDialogBox, showPhotos);
+		photos = new Photos();
 		
 		
 	}; //setup
@@ -224,6 +225,12 @@ function FirstAssistant() {
 		
 
 		setFullscreen(fullscreen === true);
+
+		photos.setFeedback({
+			status:     status,
+			alertUser:  showDialogBox,
+			showPhotos: showPhotos
+		});
 		
 		if (activateDone === true) {
 			return;
